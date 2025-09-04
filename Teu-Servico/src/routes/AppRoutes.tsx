@@ -7,6 +7,7 @@ import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
 import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { Home } from "../pages/Home/Home";
+import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
 
 export const AppRoutes = () => {
   return (
@@ -24,6 +25,14 @@ export const AppRoutes = () => {
       <Route path="/create-account" element={<CreateAccount />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+       <Route
+        path="/professional-profile"
+        element={
+          <ProtectedRoute>
+            <ProfessionalProfile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };

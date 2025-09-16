@@ -29,14 +29,13 @@ export function Hero() {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-3">
-  {/* Selecionado */}
+
   <span className="px-5 py-2 bg-[#D3d3d3] text-[#002C57] border border-gray-300 rounded-full text-sm font-medium cursor-pointer
                   shadow-sm transition-all duration-300 ease-in-out
                   hover:bg-[#F69027] hover:text-white hover:scale-105 hover:shadow-md active:scale-95">
     Desenvolvedor
   </span>
 
-  {/* Restante */}
   <span className="px-5 py-2 bg-[#D3d3d3] text-[#002C57] border border-gray-300 rounded-full text-sm font-medium cursor-pointer
                   shadow-sm transition-all duration-300 ease-in-out
                   hover:bg-[#F69027] hover:text-white hover:scale-105 hover:shadow-md active:scale-95">

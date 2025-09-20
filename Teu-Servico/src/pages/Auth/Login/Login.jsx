@@ -1,5 +1,6 @@
 import React from 'react';
 import Aside from '../../../components/AsideLogin';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   return (
@@ -103,9 +104,9 @@ export default function Login() {
           }}
         >
           Não tem uma conta?{' '}
-          <a href="#" style={{ color: '#F69027', textDecoration: 'none' }}>
+          <Link to='/create-account' style={{ color: '#F69027', textDecoration: 'none' }}>
             Criar aqui
-          </a>
+          </Link>
         </p>
       </main>
     </div>

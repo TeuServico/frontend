@@ -1,6 +1,6 @@
 import React from 'react';
 import Aside from '../../../components/AsideLogin';
-
+import { Link } from 'react-router-dom';
 
 export default function CreateAccount() {
   return (
@@ -46,7 +46,7 @@ export default function CreateAccount() {
           <img src="/google-logo.png" alt="Google" style={{ width: '38px', height: '38px' }} />
         </button>
 
-  
+
 <div style={{
   display: 'flex',
   alignItems: 'center',
@@ -124,10 +124,10 @@ export default function CreateAccount() {
           />
 
 <button
-  type="submit"
+type='submit'
   style={{
-    backgroundColor: '#002C57', 
-    color: '#F69027',            
+    backgroundColor: '#002C57',
+    color: '#F69027',
     width: '100%',
     padding: '14px 0',
     fontFamily: 'Inter, sans-serif',
@@ -153,9 +153,9 @@ export default function CreateAccount() {
           textAlign: 'center',
         }}>
           Já tem uma conta?{' '}
-          <a href="#" style={{ color: '#F69027', textDecoration: 'none', fontWeight: '600', cursor: 'pointer' }}>
+          <Link style={{ color: '#F69027', textDecoration: 'none', fontWeight: '600', cursor: 'pointer' }} to='/login'>
             Login
-          </a>
+          </Link>
         </p>
       </main>
     </div>

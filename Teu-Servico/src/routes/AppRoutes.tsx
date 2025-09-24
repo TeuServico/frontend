@@ -8,6 +8,8 @@ import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { Home } from "../pages/Home/Home";
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
+import CallToAction from "../pages/Home/CallToAction"
+
 
 export const AppRoutes = () => {
   return (

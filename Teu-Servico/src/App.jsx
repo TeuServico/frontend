@@ -12,12 +12,12 @@ import { MainServices } from "./components/MainServices";
 
 function App() {
   return (
-    <div>
+    <section>
       <Header />
       <Hero />
       <MainServices />
       <Footer />
-    </div>
+    </section>
   );
 }
 

@@ -9,32 +9,34 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import { Home } from "../pages/Home/Home";
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
 import CallToAction from "../pages/Home/CallToAction"
+import { EditInfo } from "../pages/EditInfo/EditInfor";
 
 
 export const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<App />} />
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/login" element={<Login />} />
-      <Route path="/create-account" element={<CreateAccount />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-       <Route
-        path="/professional-profile"
-        element={
-          <ProtectedRoute>
-            <ProfessionalProfile />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<App />} />
+            <Route
+                path="/home"
+                element={
+                    <ProtectedRoute>
+                        <Home />
+                    </ProtectedRoute>
+                }
+            />
+            <Route path="/edit-profile" element={<EditInfo />}></Route>
+            <Route path="/login" element={<Login />} />
+            <Route path="/create-account" element={<CreateAccount />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+                path="/professional-profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfessionalProfile />
+                    </ProtectedRoute>
+                }
+            />
+        </Routes>
+    );
 };

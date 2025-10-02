@@ -4,6 +4,7 @@ import { FaUserCircle, FaTools, FaShieldAlt, FaCamera } from "react-icons/fa";
 import { ProfessionalInfoPlaceholder } from "./ProfessionalInfoPlaceholder";
 import { SecurityPlaceholder } from "./SecurityPlaceholder";
 import { ServicesPlaceholder } from "./ServicesPlaceholder";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -46,6 +47,8 @@ const EditInfo = () => {
     const [selectedImageName, setSelectedImageName] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
+
+    const navigate = useNavigate()
 
     const handleFieldChange = (id, newValue) => {
         setFields((prev) => ({ ...prev, [id]: newValue }));
@@ -260,12 +263,16 @@ const EditInfo = () => {
                         <MenuButton active={activeSection === "linkedAccounts"} onClick={() => setActiveSection("linkedAccounts")}>
                             Contas vinculadas
                         </MenuButton>
+                        <MenuButton onClick={() => navigate('/')}>
+                            Voltar
+                        </MenuButton>
                     </MenuSection>
+
                 </aside>
 
                 <div className="rounded-3xl border border-[#ccd9e6] bg-white p-6 shadow-sm md:p-10">
                     <h1 className="text-center text-xl font-semibold md:text-3xl">
-                        Gerencie suas informacoes e verifique sua identidade
+                        Gerencie suas informacoes
                     </h1>
                     {renderContent()}
                 </div>

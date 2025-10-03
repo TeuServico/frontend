@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import "./index.css";
 import { MainServices } from "./components/MainServices";
 import { FindAPro } from "./components/FindAPro";
+import { ClientTestimonials } from "./components/ClientTestimonials";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Header />
       <Hero />
       <MainServices />
+      <ClientTestimonials />
       <FindAPro />
       <Footer />
     </section>

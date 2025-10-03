@@ -11,3 +11,7 @@ html {
 .scroll-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
+
+:root {
+  --swiper-pagination-color: #f69027;
+}

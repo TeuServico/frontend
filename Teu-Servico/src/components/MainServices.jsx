@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import { Keyboard, Navigation, Scrollbar } from "swiper/modules";
+
+import "swiper/css";
+import "swiper/css/pagination";
 import developer from "../assets/developer.png";
 import excel from "../assets/excel.png";
 import pintor from "../assets/pintor.png";
@@ -26,8 +32,6 @@ const services = [
 ];
 
 export const MainServices = () => {
-  const scrollRef = useRef(null);
-  const [cardIndex, setCardIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -39,17 +43,6 @@ export const MainServices = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  const scrollToCard = (newIndex) => {
-    const container = scrollRef.current;
-    if (!container || !container.firstChild) return;
-
-    const cardWidth = container.firstChild.offsetWidth + 16; // 16px = space-x-4
-    const scrollPosition = newIndex * cardWidth;
-
-    container.scrollTo({ left: scrollPosition, behavior: "smooth" });
-    setCardIndex(newIndex);
-  };
 
   return (
     <>
@@ -80,55 +73,73 @@ export const MainServices = () => {
           ))}
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto my-14 py-8 text-center">
-          {" "}
+        <div className="max-w-6xl mx-auto my-6 py-8 text-center">
           <h2 className="text-[#002C57] text-[32px] font-bold mb-2">
-            {" "}
-            Principais serviços:{" "}
-          </h2>{" "}
+            Principais serviços:
+          </h2>
           <p className="text-[#f69027] text-xl mb-6 font-bold">
-            {" "}
-            Os mais solicitados{" "}
+            Os mais solicitados
           </p>
-          <div className="relative">
-            <button
-              onClick={() =>
-                scrollToCard(
-                  (cardIndex - 1 + services.length) % services.length
-                )
-              }
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-[#f69027] rounded-full shadow-md hover:bg-[#f68f27a1] w-12 h-12 flex items-center justify-center cursor-pointer z-10"
-            >
-              <img src={arrowLeft} alt="" className="max-w-2.5" />
-            </button>
-
-            <div
-              ref={scrollRef}
-              className="flex overflow-x-auto space-x-4 scroll-hidden px-4 max-w-5xl mx-10"
+          <div className="relative cursor-grab mx-4 px-15">
+            <Swiper
+              slidesPerView={3}
+              loop={true}
+              spaceBetween={20}
+              slidesPerGroupSkip={1}
+              grabCursor={true}
+              keyboard={{
+                enabled: true,
+              }}
+              scrollbar={true}
+              navigation={{
+                nextEl: ".custom-next",
+                prevEl: ".custom-prev",
+              }}
+              modules={[Keyboard, Scrollbar, Navigation]}
+              breakpoints={{
+                0: {
+                  slidesPerView: 1,
+                  spaceBetween: 20,
+                },
+                425: {
+                  slidesPerView: 2,
+                  spaceBetween: 20,
+                },
+                768: {
+                  slidesPerView: 3,
+                  spaceBetween: 20,
+                },
+                1280: {
+                  slidesPerView: 4,
+                  spaceBetween: 20,
+                },
+              }}
+              className="min-h-[320px] relative"
             >
               {services.map((service, index) => (
-                <div
-                  key={index}
-                  className="max-w-[240px] min-h-[280px] shadow-md flex-shrink-0 rounded-lg overflow-hidden"
-                >
-                  <img
-                    src={service.image}
-                    alt={service.title}
-                    className="w-[240px] h-[280px] object-cover"
-                  />
-                  <h3 className="text-base text-[#002C57] bg-[#f69027] text-center">
-                    {service.title}
-                  </h3>
-                </div>
+                <SwiperSlide className="h-auto flex justify-center">
+                  <div
+                    key={index}
+                    className="max-w-[240px] min-h-[280px] shadow-md flex-shrink-0 rounded-lg overflow-hidden"
+                  >
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className="w-[240px] h-[280px] object-cover"
+                    />
+                    <h3 className="text-base text-[#002C57] bg-[#f69027] text-center">
+                      {service.title}
+                    </h3>
+                  </div>
+                </SwiperSlide>
               ))}
+            </Swiper>
+            <div className="custom-prev absolute left-0 top-1/2 transform -translate-y-1/2 bg-[#f69027] rounded-full shadow-md hover:bg-[#f68f27a1] w-12 h-12 flex items-center justify-center cursor-pointer z-10">
+              <img src={arrowLeft} alt="Anterior" className="max-w-2.5" />
             </div>
-
-            <button
-              onClick={() => scrollToCard((cardIndex + 1) % services.length)}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-[#f69027] rounded-full shadow-md hover:bg-[#f68f27a1] w-12 h-12 flex items-center justify-center cursor-pointer z-10"
-            >
-              <img src={arrowRight} alt="" className="max-w-2.5" />
-            </button>
+            <div className="custom-next absolute right-0 top-1/2 transform -translate-y-1/2 bg-[#f69027] rounded-full shadow-md hover:bg-[#f68f27a1] w-12 h-12 flex items-center justify-center cursor-pointer z-10">
+              <img src={arrowRight} alt="Anterior" className="max-w-2.5" />
+            </div>
           </div>
         </div>
       )}

@@ -83,6 +83,7 @@ export const MainServices = () => {
           <div className="relative cursor-grab mx-4 px-15">
             <Swiper
               slidesPerView={3}
+              loop={true}
               spaceBetween={20}
               slidesPerGroupSkip={1}
               grabCursor={true}

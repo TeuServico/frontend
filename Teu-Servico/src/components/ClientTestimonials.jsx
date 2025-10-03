@@ -5,6 +5,7 @@ import { FreeMode, Pagination } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/pagination";
+import "swiper/css/navigation";
 
 const ReviewCard = ({ title, message, user, job }) => {
   const [truncatedMessage, setTruncatedMessage] = useState(message);
@@ -47,10 +48,11 @@ export const ClientTestimonials = () => {
         O que os nossos clientes estão dizendo
       </h2>
 
-      <div className="cursor-grab">
+      <div>
         <Swiper
           slidesPerView={3}
           spaceBetween={20}
+          grabCursor={true}
           freeMode={true}
           pagination={{
             clickable: true,
@@ -72,7 +74,6 @@ export const ClientTestimonials = () => {
           }}
           className="w-4/6 h-full"
         >
-          <div></div>
           <SwiperSlide className={swiperSlideStyle}>
             <ReviewCard
               title="Desenvolvedor Web"

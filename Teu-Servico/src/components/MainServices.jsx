@@ -47,7 +47,7 @@ export const MainServices = () => {
   return (
     <>
       {isMobile ? (
-        <div className="flex flex-col items-center space-y-6 px-4 mx-8">
+        <div className="flex flex-col items-center mb-12 space-y-6 px-4 mx-8 text-center">
           <h2 className="text-[#002C57] text-[32px] font-bold mb-2">
             {" "}
             Principais serviços:{" "}

@@ -7,7 +7,6 @@ import { ServicesPlaceholder } from "./ServicesPlaceholder";
 import { useNavigate } from "react-router-dom";
 
 
-
 const MenuSection = ({ icon: Icon, title, children }) => (
     <div className="mb-8 last:mb-0">
         <div className="mb-4 flex items-center gap-3 text-base font-semibold md:text-lg">
@@ -229,7 +228,7 @@ const EditInfo = () => {
             case "services":
                 return <ServicesPlaceholder />;
             case "password":
-                return <SecurityPlaceholder title="Alterar senha" />;
+                return <SecurityPlaceholder title="Alterar senha"/>;
             case "linkedAccounts":
                 return <SecurityPlaceholder title="Contas vinculadas" />;
             default:

@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { FaYoutube, FaTiktok, FaLinkedin } from "react-icons/fa";
 
-export default function Footer() {
+export function Footer() {
   return (
     <footer className="bg-[#F69027] w-full py-6 px-4">
       <div className="max-w-6xl mx-auto flex flex-col items-center text-center gap-6 md:flex-row md:items-start md:justify-center md:text-left md:gap-20">

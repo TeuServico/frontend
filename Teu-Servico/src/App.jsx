@@ -1,15 +1,11 @@
-// import React from "react";
-// import CreateAccount from "./pages/Auth/CreateAccount/CreateAccount";
-// import Login from "./pages/Auth/Login/Login";
-// import ForgotPassword from "./pages/Auth/ForgotPassword/ForgotPassword";
-// import ResetPassword from "./pages/Auth/ResetPassword/ResetPassword";
+import { About } from "./components/About";
+import { ClientTestimonials } from "./components/ClientTestimonials";
+import { FindAPro } from "./components/FindAPro";
+import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
-import {Footer} from "./components/Footer";
-import "./index.css";
 import { MainServices } from "./components/MainServices";
-import { FindAPro } from "./components/FindAPro";
-import { ClientTestimonials } from "./components/ClientTestimonials";
+import "./index.css";
 
 function App() {
   return (
@@ -17,13 +13,12 @@ function App() {
       <Header />
       <Hero />
       <MainServices />
+      <About />
       <ClientTestimonials />
       <FindAPro />
       <Footer />
     </section>
-
   );
 }
 
 export default App;
-

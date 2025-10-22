@@ -1,14 +1,14 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import Login from "../pages/Auth/Login/Login";
-import CreateAccount from "../pages/Auth/CreateAccount/CreateAccount";
 import App from "../App";
-import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
-import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 import { ProtectedRoute } from "../components/ProtectedRoute";
-import { Home } from "../pages/Home/Home";
+import CreateAccount from "../pages/Auth/CreateAccount/CreateAccount";
+import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
+import Login from "../pages/Auth/Login/Login";
+import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
+// Home removido - landing agora é App.jsx
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
-import CallToAction from "../pages/Home/CallToAction"
+// import CallToAction from "../pages/Home/CallToAction"
 import { EditInfo } from "../pages/EditInfo/EditInfor";
 
 
@@ -20,7 +20,7 @@ export const AppRoutes = () => {
                 path="/home"
                 element={
                     <ProtectedRoute>
-                        <Home />
+                        <App />
                     </ProtectedRoute>
                 }
             />

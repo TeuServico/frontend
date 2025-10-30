@@ -3,9 +3,14 @@ import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, isTokenValid, logout } = useContext(AuthContext);
   const location = useLocation();
 
-  if (isLoggedIn) return children;
+  const valid =
+    isLoggedIn && (typeof isTokenValid === "function" ? isTokenValid() : true);
+  if (valid) return children;
+  if (isLoggedIn && !valid && typeof logout === "function") {
+    logout();
+  }
   return <Navigate to="/login" replace state={{ from: location }} />;
 };

@@ -31,9 +31,9 @@ export function Header() {
           <a href="#" className="text-[#002C57] hover:text-[#F69027]">
             O que fazemos
           </a>
-          <a href="#" className="text-[#002C57] hover:text-[#F69027]">
+          <Link to="/buscar" className="text-[#002C57] hover:text-[#F69027]">
             Encontrar Profissionais
-          </a>
+          </Link>
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -127,13 +127,13 @@ export function Header() {
             >
               Eu quero Trabalhar
             </a>
-            <a
-              href="#"
+            <Link
+              to="/buscar"
               className="hover:text-gray-400 text-center"
               style={{ color: "#002C57" }}
             >
               Encontrar Profissionais
-            </a>
+            </Link>
           </nav>
         </div>
       )}

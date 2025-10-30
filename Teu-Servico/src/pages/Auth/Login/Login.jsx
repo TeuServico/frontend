@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import Aside from "../../../components/AsideLogin";
 import { AuthContext } from "../../../context/AuthContext";
+import { api } from "../../../services/api";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -9,12 +10,27 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmit = (e) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    const displayName =
-      email && email.includes("@") ? email.split("@")[0] : "Rodrigo Santos";
-    login({ name: displayName });
-    // O AuthContext já navega para /home; se quiser voltar para a rota de origem, adapte o login para usar state.from
+    setError("");
+    setLoading(true);
+    try {
+      const response = await api.post('/credenciais/login', { email, senha: password });
+      const { acessToken, expiresIn, role } = response || {};
+      if (!acessToken || !expiresIn) {
+        throw new Error('Resposta inválida do servidor');
+      }
+      const expiresAt = Date.now() + Number(expiresIn) * 1000;
+      const displayName = email && email.includes("@") ? email.split("@")[0] : "Usuário";
+      login({ user: { name: displayName }, token: acessToken, role, expiresAt });
+    } catch (err) {
+      setError(err?.message || 'Falha no login');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,10 +122,17 @@ export default function Login() {
               boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               transition: "background-color 0.3s ease",
             }}
+            disabled={loading}
           >
-            Login
+            {loading ? 'Entrando...' : 'Login'}
           </button>
         </form>
+
+        {error && (
+          <p style={{ color: '#c00', marginTop: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' }}>
+            {error}
+          </p>
+        )}
 
         <p
           style={{

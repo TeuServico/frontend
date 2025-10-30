@@ -10,6 +10,7 @@ import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
 // import CallToAction from "../pages/Home/CallToAction"
 import { EditInfo } from "../pages/EditInfo/EditInfor";
+import Search from "../pages/Search/Search";
 
 
 export const AppRoutes = () => {
@@ -29,6 +30,7 @@ export const AppRoutes = () => {
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/buscar" element={<Search />} />
             <Route
                 path="/professional-profile"
                 element={

@@ -69,6 +69,22 @@ O **Teu Serviço** é uma plataforma web que conecta clientes a profissionais qu
    http://localhost:5173
    ```
 
+### 🔧 Variáveis de ambiente (API)
+
+Crie um arquivo `.env` na raiz do projeto (mesmo nível do `package.json`) com a base URL do backend:
+
+```
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+Em produção, ajuste a URL conforme seu ambiente.
+
+### 🔐 Login via JWT
+
+- Endpoint de login: `POST /credenciais/login` com `{ email, senha }`.
+- Resposta esperada: `{ acessToken, expiresIn, role }`.
+- O token é salvo em `localStorage` na chave `ts_auth` e enviado automaticamente no header `Authorization: Bearer <token>`.
+
 ## 📜 Scripts Disponíveis
 
 | Comando           | Descrição                                |

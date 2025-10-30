@@ -7,6 +7,9 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [role, setRole] = useState(null);
+  const [expiresAt, setExpiresAt] = useState(null);
   const navigate = useNavigate();
 
   // Hidrata estado inicial a partir do localStorage
@@ -18,6 +21,9 @@ export const AuthProvider = ({ children }) => {
         if (parsed && typeof parsed === "object") {
           setIsLoggedIn(Boolean(parsed.isLoggedIn));
           setUser(parsed.user ?? null);
+          setToken(parsed.token ?? null);
+          setRole(parsed.role ?? null);
+          setExpiresAt(parsed.expiresAt ?? null);
         }
       }
     } catch {
@@ -25,13 +31,33 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (userData) => {
+  const isTokenValid = () => {
+    return (
+      Boolean(token) && Boolean(expiresAt) && Date.now() < Number(expiresAt)
+    );
+  };
+
+  const login = ({
+    user: userData,
+    token: jwt,
+    role: userRole,
+    expiresAt: expMillis,
+  }) => {
     setUser(userData);
+    setToken(jwt);
+    setRole(userRole ?? null);
+    setExpiresAt(expMillis ?? null);
     setIsLoggedIn(true);
     try {
       localStorage.setItem(
         "ts_auth",
-        JSON.stringify({ isLoggedIn: true, user: userData })
+        JSON.stringify({
+          isLoggedIn: true,
+          user: userData,
+          token: jwt,
+          role: userRole ?? null,
+          expiresAt: expMillis ?? null,
+        })
       );
     } catch {
       // storage pode falhar em modo privado; app segue funcionando em memória
@@ -42,6 +68,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setIsLoggedIn(false);
+    setToken(null);
+    setRole(null);
+    setExpiresAt(null);
     try {
       localStorage.removeItem("ts_auth");
     } catch {
@@ -51,7 +80,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        user,
+        token,
+        role,
+        expiresAt,
+        isTokenValid,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

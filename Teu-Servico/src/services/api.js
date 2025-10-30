@@ -1,52 +1,63 @@
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const BASE_URL = (import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
 
-export async function post(path, body) {
-    await delay(300);
-    switch (path) {
-        case '/auth/login': {
-            const name = body?.email ? String(body.email).split('@')[0] : 'Lázaro Kauã';
-            return { token: 'mock-token', user: { name } };
-        }
-        default:
-            throw new Error(`POST ${path} não implementado`);
+function getStoredAuth() {
+    try {
+        const stored = localStorage.getItem('ts_auth');
+        return stored ? JSON.parse(stored) : {};
+    } catch {
+        return {};
     }
 }
 
-export async function get(path, params) {
-    await delay(300);
-    switch (path) {
-        case '/users/me': {
-            return { name: 'Lázaro Kauã', email: 'lazaro@example.com' };
-        }
-        case '/professionals/search': {
-            const q = params?.q?.toLowerCase?.() ?? '';
-            const all = [
-                { id: 1, name: 'Ana Silva', skill: 'Design', rating: 4.7 },
-                { id: 2, name: 'Bruno Souza', skill: 'Marketing', rating: 4.5 },
-                { id: 3, name: 'Carlos Lima', skill: 'TI', rating: 4.8 },
-                { id: 4, name: 'Daniela Alves', skill: 'Excel', rating: 4.2 },
-            ];
-            const items = q ? all.filter((p) => (p.name + p.skill).toLowerCase().includes(q)) : all;
-            return { items };
-        }
-        default:
-            throw new Error(`GET ${path} não implementado`);
-    }
+function buildHeaders(extra = {}) {
+    const { token } = getStoredAuth();
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+    return { 'Content-Type': 'application/json', ...authHeader, ...extra };
 }
 
-export function withErrorHandling(fn) {
-    return async (...args) => {
+async function request(method, path, { params, body, headers } = {}) {
+    const url = new URL(`${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`);
+    if (params && typeof params === 'object') {
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+    }
+
+    const response = await fetch(url, {
+        method,
+        headers: buildHeaders(headers),
+        body: body != null ? JSON.stringify(body) : undefined,
+    });
+
+    if (response.status === 401) {
         try {
-            return await fn(...args);
-        } catch (err) {
-            console.error('API error:', err);
-            throw err;
-        }
-    };
+            // efetua logout simples
+            localStorage.removeItem('ts_auth');
+        } catch { }
+        throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`Erro ${response.status}: ${text || response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+        return response.json();
+    }
+    return response.text();
 }
 
 export const api = {
-    post: withErrorHandling(post),
-    get: withErrorHandling(get),
+    get: (path, params) => request('GET', path, { params }),
+    post: (path, body) => request('POST', path, { body }),
 };
+
+// Chamada real ao backend para buscar ofertas por nome do tipo de serviço
+export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElementos = 10 }) {
+    return api.get('/ofertarservico/buscar/tiposervico/nome', {
+        pagina,
+        qtdMaximoElementos,
+        nome,
+    });
+}

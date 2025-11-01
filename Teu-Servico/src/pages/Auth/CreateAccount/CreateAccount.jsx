@@ -1,11 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Aside from "../../../components/AsideLogin";
 import { AuthContext } from "../../../context/AuthContext";
 import { api } from "../../../services/api";
 
 export default function CreateAccount() {
   const { login } = useContext(AuthContext);
+  const [searchParams] = useSearchParams();
+  const accountType = searchParams.get("type") || "cliente"; // default é cliente
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,9 +21,13 @@ export default function CreateAccount() {
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [cep, setCep] = useState("");
+  const [sobreMim, setSobreMim] = useState("");
+  const [profissao, setProfissao] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isMobile, setIsMobile] = useState(false);
+
+  const isProfessional = accountType === "profissional";
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 900px)");
@@ -90,28 +97,70 @@ export default function CreateAccount() {
         throw new Error("Preencha todos os campos de endereço obrigatórios");
       }
 
-      const body = {
-        credenciaisUsuarioRequestDTO: {
-          email,
-          senha: password,
-        },
-        clienteRequestDTO: {
-          nomeCompleto: name,
-          telefone: digitsPhone,
-          cpf: digitsCpf,
-          endereco: {
-            rua,
-            numero,
-            complemento,
-            bairro,
-            cidade,
-            estado: estadoUF,
-            cep: digitsCep,
-          },
-        },
-      };
+      // Validações específicas para profissional
+      if (isProfessional) {
+        if (!sobreMim || sobreMim.trim().length === 0) {
+          throw new Error(
+            "O campo 'Sobre mim' é obrigatório para profissionais"
+          );
+        }
+        if (!profissao || profissao.trim().length === 0) {
+          throw new Error("O campo 'Profissão' é obrigatório");
+        }
+      }
 
-      const res = await api.post("/cliente/criar", body);
+      let body;
+      let endpoint;
+
+      if (isProfessional) {
+        body = {
+          credenciaisUsuarioRequestDTO: {
+            email,
+            senha: password,
+          },
+          profissionalRequestDTO: {
+            nomeCompleto: name,
+            telefone: digitsPhone,
+            cpf: digitsCpf,
+            endereco: {
+              rua,
+              numero,
+              complemento,
+              bairro,
+              cidade,
+              estado: estadoUF,
+              cep: digitsCep,
+            },
+            sobreMim: sobreMim.trim(),
+            profissao: profissao.toUpperCase(),
+          },
+        };
+        endpoint = "/profissional/criar";
+      } else {
+        body = {
+          credenciaisUsuarioRequestDTO: {
+            email,
+            senha: password,
+          },
+          clienteRequestDTO: {
+            nomeCompleto: name,
+            telefone: digitsPhone,
+            cpf: digitsCpf,
+            endereco: {
+              rua,
+              numero,
+              complemento,
+              bairro,
+              cidade,
+              estado: estadoUF,
+              cep: digitsCep,
+            },
+          },
+        };
+        endpoint = "/cliente/criar";
+      }
+
+      const res = await api.post(endpoint, body);
       const { acessToken, expiresIn, role } = res || {};
       if (!acessToken || !expiresIn) {
         throw new Error("Resposta inválida do servidor");
@@ -159,8 +208,21 @@ export default function CreateAccount() {
             width: "100%",
           }}
         >
-          Criar uma Conta
+          {isProfessional ? "Cadastro de Profissional" : "Criar uma Conta"}
         </h2>
+        {isProfessional && (
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#002C57",
+              textAlign: "center",
+              marginBottom: "20px",
+              opacity: 0.8,
+            }}
+          >
+            Complete seu cadastro para começar a oferecer seus serviços
+          </p>
+        )}
 
         <button
           type="button"
@@ -459,6 +521,93 @@ export default function CreateAccount() {
             />
           </div>
 
+          {isProfessional && (
+            <>
+              <div
+                style={{
+                  marginTop: "8px",
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: "12px",
+                    color: "#002C57",
+                    opacity: 0.8,
+                    marginBottom: "4px",
+                    display: "block",
+                  }}
+                >
+                  Profissão *
+                </label>
+                <select
+                  value={profissao}
+                  onChange={(e) => setProfissao(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    border: "none",
+                    borderBottom: "2px solid #002C57",
+                    fontSize: "14px",
+                    outline: "none",
+                    backgroundColor: "transparent",
+                    color: "#002C57",
+                    fontFamily: "Inter, sans-serif",
+                    cursor: "pointer",
+                  }}
+                  required
+                >
+                  <option value="">Selecione uma profissão</option>
+                  <option value="PROGRAMADOR">Programador</option>
+                  <option value="ELETRICISTA">Eletricista</option>
+                  <option value="PEDREIRO">Pedreiro</option>
+                  <option value="PINTOR">Pintor</option>
+                  <option value="MONTADOR">Montador</option>
+                  <option value="FRETISTA">Fretista</option>
+                  <option value="DESIGNER">Designer</option>
+                  <option value="MARKETING">Marketing</option>
+                  <option value="OUTRO">Outro</option>
+                </select>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "8px",
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: "12px",
+                    color: "#002C57",
+                    opacity: 0.8,
+                    marginBottom: "4px",
+                    display: "block",
+                  }}
+                >
+                  Sobre mim *
+                </label>
+                <textarea
+                  value={sobreMim}
+                  onChange={(e) => setSobreMim(e.target.value)}
+                  placeholder="Conte um pouco sobre você, suas experiências e habilidades..."
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    border: "none",
+                    borderBottom: "2px solid #002C57",
+                    fontSize: "14px",
+                    outline: "none",
+                    backgroundColor: "transparent",
+                    color: "#002C57",
+                    fontFamily: "Inter, sans-serif",
+                    minHeight: "100px",
+                    resize: "vertical",
+                  }}
+                  required
+                />
+              </div>
+            </>
+          )}
+
           <button
             type="submit"
             style={{
@@ -478,7 +627,11 @@ export default function CreateAccount() {
             }}
             disabled={loading}
           >
-            {loading ? "Criando..." : "Criar Conta"}
+            {loading
+              ? "Criando..."
+              : isProfessional
+              ? "Cadastrar como Profissional"
+              : "Criar Conta"}
           </button>
         </form>
 

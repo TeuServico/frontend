@@ -19,6 +19,7 @@ function App() {
       <Footer />
     </section>
   );
+
 }
 
 export default App;

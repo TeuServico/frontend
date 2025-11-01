@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // noop
     }
-    navigate("/login");
+    navigate("/");
   };
 
   return (

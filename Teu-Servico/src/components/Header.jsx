@@ -25,9 +25,9 @@ export function Header() {
         />
 
         <nav className="hidden md:flex space-x-12 items-center">
-          <a href="#" className="text-[#002C57] hover:text-[#F69027]">
+          <Link to="/create-account?type=profissional" className="text-[#002C57] hover:text-[#F69027]">
             Eu quero Trabalhar
-          </a>
+          </Link>
           <a href="#" className="text-[#002C57] hover:text-[#F69027]">
             O que fazemos
           </a>
@@ -52,18 +52,18 @@ export function Header() {
             </>
           ) : (
             <>
-              <button
-                onClick={() => login({ name: "Rodrigo Santos" })}
+              <Link
+                to="/login"
                 className="text-[#002C57] hover:text-[#F69027]"
               >
                 Login
-              </button>
-              <a
-                href="/create-account"
-                className="bg-[#F69027] text-[#002C57] px-4 py-2 rounded-md"
+              </Link>
+              <Link
+                to="/create-account?type=cliente"
+                className="bg-[#F69027] text-[#002C57] px-4 py-2 rounded-md hover:bg-[#d96c15] transition"
               >
                 Cadastre-se
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -97,20 +97,20 @@ export function Header() {
               </>
             ) : (
               <>
-                <button
-                  onClick={() => login({ name: "Usuário Demo" })}
+                <Link
+                  to="/login"
                   className="hover:text-gray-400 text-center"
                   style={{ color: "#002C57" }}
                 >
                   Login
-                </button>
-                <a
-                  href="/create-account"
+                </Link>
+                <Link
+                  to="/create-account?type=cliente"
                   className="hover:text-gray-400 text-center"
                   style={{ color: "#F69027" }}
                 >
                   Cadastre-se
-                </a>
+                </Link>
               </>
             )}
             <a
@@ -120,13 +120,13 @@ export function Header() {
             >
               O que fazemos
             </a>
-            <a
-              href="#"
+            <Link
+              to="/create-account?type=profissional"
               className="hover:text-gray-400 text-center"
               style={{ color: "#002C57" }}
             >
               Eu quero Trabalhar
-            </a>
+            </Link>
             <Link
               to="/buscar"
               className="hover:text-gray-400 text-center"

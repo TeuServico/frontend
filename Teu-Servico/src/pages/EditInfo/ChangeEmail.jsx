@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import { MdEmail } from "react-icons/md";
+import { api } from '../../services/api';
 
 export default function ChangeEmail() {
   const [email, setEmail] = useState("");
@@ -7,6 +8,19 @@ export default function ChangeEmail() {
 
   const [errorEmail, setErrorEmail] = useState(false);
   const [errorNewEmail, setErrorNewEmail] = useState(false);
+
+  useEffect(() => {
+    const fetchEmail = async () => {
+      try {
+        const response = await api.get('/auth/me');
+        setEmail(response.sub || '');
+      } catch (error) {
+        console.error('Erro ao buscar e-mail do usuário:', error);
+      }
+    };
+
+    fetchEmail();
+  }, []);
 
 
   function saveNewEmail(event) {

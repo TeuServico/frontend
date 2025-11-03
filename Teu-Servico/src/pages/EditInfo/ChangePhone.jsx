@@ -1,11 +1,24 @@
-import React from 'react'
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPhoneAlt } from "react-icons/fa";
-import { FaArrowLeft } from "react-icons/fa";
+import { getClientePerfil } from '../../services/api';
 
 export default function ChangePhone() {
+  const [currentPhone, setCurrentPhone] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchPhone = async () => {
+      try {
+        const response = await getClientePerfil();
+        setCurrentPhone(response.telefone || '');
+      } catch (error) {
+        console.error('Erro ao buscar telefone do usuário:', error);
+      }
+    };
+
+    fetchPhone();
+  }, []);
 
   function saveNewPhone(event) {
     event.preventDefault();
@@ -37,7 +50,15 @@ export default function ChangePhone() {
         </div>
         <div className='mt-3'>
           <form>
-            <label htmlFor="newPhone" className='text-black text-[15px]'>Telefone</label><br />
+            <label htmlFor="currentPhone" className='text-black text-[15px]'>Telefone Atual</label><br />
+            <input type="tel" className={`bg-[#D9D9D9] w-[300px] h-[40px] pl-3 mt-2 mb-2
+                     border-2 border-gray-300 focus:outline-none focus:border-[#F69027]
+                     rounded cursor-not-allowed`}
+              value={currentPhone}
+              disabled
+            /><br />
+
+            <label htmlFor="newPhone" className='text-black text-[15px]'>Novo Telefone</label><br />
             <input type="tel" className={`bg-[#D9D9D9] w-[300px] h-[40px] pl-3 mt-2 mb-2
                      border-2 border-gray-300 focus:outline-none focus:border-[#F69027]
                      rounded

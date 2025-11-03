@@ -63,3 +63,7 @@ export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElemento
         nome,
     });
 }
+
+export async function getClientePerfil() {
+    return api.get('/cliente/perfil');
+}

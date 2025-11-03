@@ -3,63 +3,150 @@ import React, { useState } from "react";
 export default function ServiceCard({ item }) {
   const [expanded, setExpanded] = useState(false);
 
-  const sobreMim = item?.profissionalSobreMim || "";
-  const resumoSobreMim =
-    sobreMim.length > 140 && !expanded
-      ? sobreMim.slice(0, 140) + "..."
-      : sobreMim;
+  const descricao = item?.descricao || item?.profissionalSobreMim || "";
+  const maxLength = 97; // Baseado no design do Figma
+  const descricaoTruncada =
+    descricao.length > maxLength && !expanded
+      ? descricao.slice(0, maxLength) + "..."
+      : descricao;
+
+  // Tags do item (habilidades, tecnologias, etc)
+  const tags = item?.tags || item?.habilidades || [];
+  const maxTagsVisible = 7; // Mostrar até 7 tags antes do botão "+"
 
   return (
-    <div className="w-full border border-[#E6EDF5] rounded-lg p-4 bg-white shadow-sm">
-      <div className="flex gap-4 items-start">
-        <div className="flex-shrink-0 w-16 h-16 bg-[#F2F6FB] rounded-md" />
-        <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-[#002C57] font-semibold text-lg">
-              {item?.tipoServico?.nome || "Tipo de serviço"}
-            </h3>
-            <span className="text-xs text-[#73839D]">
-              {item?.tipoServico?.categoria
-                ? `• ${item.tipoServico.categoria}`
-                : null}
-            </span>
-          </div>
-          <p className="text-sm text-[#002C57] mt-1">
-            {item?.profissionalNome}
-          </p>
-          <p className="text-sm text-[#4B5D7E] mt-2">{item?.descricao}</p>
+    <div className="w-full relative">
+      {/* Linha separadora no topo */}
+      <div className="absolute top-0 left-0 w-full h-px bg-[#002C57] opacity-20" />
 
-          {sobreMim && (
-            <div className="text-sm text-[#4B5D7E] mt-2">
-              <span>{resumoSobreMim}</span>
-              {sobreMim.length > 140 && (
-                <button
-                  className="ml-2 text-[#F69027] hover:underline"
-                  onClick={() => setExpanded((v) => !v)}
-                >
-                  {expanded ? "mostrar menos" : "mostrar mais"}
-                </button>
-              )}
-            </div>
+      <div className="flex flex-row items-center gap-[22px] py-0">
+        {/* Imagem do profissional/serviço */}
+        <div className="flex-shrink-0 w-40 h-40 bg-[#E3E3E3] rounded-lg overflow-hidden flex items-center justify-center">
+          {item?.profissionalFoto || item?.imagem ? (
+            <img
+              src={item.profissionalFoto || item.imagem}
+              alt={item?.profissionalNome || "Serviço"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[#F69027] to-[#002C57] opacity-20" />
           )}
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {/* tags ilustrativas (placeholder) */}
-            <span className="text-xs px-2 py-1 bg-[#F2F6FB] text-[#002C57] rounded">
-              Tag
-            </span>
-            <span className="text-xs px-2 py-1 bg-[#F2F6FB] text-[#002C57] rounded">
-              Tag
-            </span>
-            <span className="text-xs px-2 py-1 bg-[#F2F6FB] text-[#002C57] rounded">
-              Tag
-            </span>
-          </div>
         </div>
-        <div className="flex-shrink-0">
-          <button className="bg-[#F69027] text-[#002C57] text-sm px-3 py-2 rounded-md">
-            Iniciar conversa
-          </button>
+
+        {/* Body do card */}
+        <div className="flex-1 flex flex-col gap-[10px]">
+          {/* Header: Nome + Botão */}
+          <div className="flex items-center justify-between">
+            <h3
+              className="text-[#002C57] font-semibold text-2xl leading-[1.2]"
+              style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {item?.profissionalNome || "Nome usuario"}
+            </h3>
+            <button
+              className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
+              style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              Iniciar conversa
+            </button>
+          </div>
+
+          {/* Descrição */}
+          <div className="relative">
+            <p
+              className="text-[#002C57] text-base leading-[1.4]"
+              style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+                maxHeight: expanded ? "none" : "44px",
+                overflow: expanded ? "visible" : "hidden",
+              }}
+            >
+              {descricaoTruncada}
+            </p>
+            {descricao.length > maxLength && (
+              <div className="flex items-center gap-2 mt-1">
+                <div className="h-px w-[116px] bg-[#002C57] opacity-20" />
+                <button
+                  onClick={() => setExpanded((v) => !v)}
+                  className="text-[#F69027] text-base font-normal hover:underline"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  {expanded ? "...mostrar menos" : "...mostrar mais"}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Tags */}
+          <div className="flex flex-wrap items-center gap-2">
+            {tags.slice(0, maxTagsVisible).map((tag, index) => (
+              <button
+                key={index}
+                className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity"
+                style={{
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  height: "26px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {typeof tag === "string" ? tag : tag.nome || tag}
+              </button>
+            ))}
+            {tags.length > maxTagsVisible && (
+              <button
+                className="bg-[#002C57] text-[#F69027] border border-[#F69027] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity"
+                style={{
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  height: "26px",
+                  width: "42px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title={`Mais ${tags.length - maxTagsVisible} tags`}
+              >
+                +
+              </button>
+            )}
+            {/* Se não houver tags, mostrar placeholder */}
+            {tags.length === 0 && (
+              <>
+                <button
+                  className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-normal hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    height: "26px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Tag
+                </button>
+                <button
+                  className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-normal hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    height: "26px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Tag
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

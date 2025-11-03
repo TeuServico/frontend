@@ -4,7 +4,7 @@ export function About() {
   const [activeTab, setActiveTab] = useState("contratante");
 
   return (
-    <section className="bg-white py-16 px-4">
+    <section className="bg-white py-16 px-4" id="about">
       <div className="container mx-auto max-w-6xl">
         {/* Título */}
         <h2 className="text-3xl font-bold text-[#002C57] text-center mb-8">

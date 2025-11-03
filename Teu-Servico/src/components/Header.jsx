@@ -28,7 +28,7 @@ export function Header() {
           <Link to="/create-account?type=profissional" className="text-[#002C57] hover:text-[#F69027]">
             Eu quero Trabalhar
           </Link>
-          <a href="#" className="text-[#002C57] hover:text-[#F69027]">
+          <a href="#about" className="text-[#002C57] hover:text-[#F69027]">
             O que fazemos
           </a>
           <Link to="/buscar" className="text-[#002C57] hover:text-[#F69027]">
@@ -66,7 +66,7 @@ export function Header() {
               </Link>
             </>
           )}
-        </div>
+       </div>
 
         <div className="md:hidden">
           <button onClick={toggleMenu}>

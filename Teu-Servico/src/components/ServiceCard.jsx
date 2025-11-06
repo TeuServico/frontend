@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useChat } from "../context/ChatContext";
 
 export default function ServiceCard({ item }) {
   const [expanded, setExpanded] = useState(false);
+  const { openChat } = useChat();
 
   const descricao = item?.descricao || item?.profissionalSobreMim || "";
   const maxLength = 97; // Baseado no design do Figma
@@ -47,6 +49,7 @@ export default function ServiceCard({ item }) {
               {item?.profissionalNome || "Nome usuario"}
             </h3>
             <button
+              onClick={() => openChat(item)}
               className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
               style={{
                 fontFamily: "Inter, system-ui, sans-serif",

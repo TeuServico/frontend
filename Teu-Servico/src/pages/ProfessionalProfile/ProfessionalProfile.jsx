@@ -1,8 +1,10 @@
 import React from "react";
+import { Footer } from "../../components/Footer";
 import { Header } from "../../components/Header";
-import {Footer} from "../../components/Footer";
+import { useChat } from "../../context/ChatContext";
 
 const ProfessionalProfile = () => {
+  const { openChat } = useChat();
   return (
     <>
       <Header />
@@ -59,7 +61,10 @@ const ProfessionalProfile = () => {
 
             {/* BOTÃO CONVERSAR */}
             <div className="mt-4">
-              <button className="bg-[#F69027] text-[#002C57] px-12 py-1.5 rounded font-semibold border border-[#002C57] hover:brightness-110 transition cursor-pointer w-full max-w-xs mx-auto md:mx-0">
+              <button
+                onClick={() => openChat({ profissionalNome: "João da Silva" })}
+                className="bg-[#F69027] text-[#002C57] px-12 py-1.5 rounded font-semibold border border-[#002C57] hover:brightness-110 transition cursor-pointer w-full max-w-xs mx-auto md:mx-0"
+              >
                 Conversar
               </button>
             </div>

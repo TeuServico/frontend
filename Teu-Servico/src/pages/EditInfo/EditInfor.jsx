@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { FaCamera, FaShieldAlt, FaTools, FaUserCircle } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
-import { getClientePerfil } from "../../services/api";
+import { AuthContext } from "../../context/AuthContext";
+import { getClientePerfil, getProfissionalPerfil } from "../../services/api";
 import { ProfessionalInfoPlaceholder } from "./ProfessionalInfoPlaceholder";
 import { SecurityPlaceholder } from "./SecurityPlaceholder";
 import { ServicesPlaceholder } from "./ServicesPlaceholder";
@@ -32,6 +33,9 @@ const MenuButton = ({ active, children, onClick }) => (
 );
 
 const EditInfo = () => {
+  const { role } = useContext(AuthContext);
+  const isProfessional = role === "PROFISSIONAL" || role === "Profissional";
+
   const [activeSection, setActiveSection] = useState("personal");
   const [fields, setFields] = useState({
     username: "",
@@ -58,7 +62,10 @@ const EditInfo = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const perfilResponse = await getClientePerfil();
+        // Usa endpoint diferente baseado na role
+        const perfilResponse = isProfessional
+          ? await getProfissionalPerfil()
+          : await getClientePerfil();
 
         setFields({
           username: "",
@@ -74,7 +81,7 @@ const EditInfo = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [isProfessional]);
 
   const handleFieldChange = (id, newValue) => {
     setFields((prev) => ({ ...prev, [id]: newValue }));
@@ -293,22 +300,28 @@ const EditInfo = () => {
             >
               Informacoes pessoais
             </MenuButton>
-            <MenuButton
-              active={activeSection === "professional"}
-              onClick={() => setActiveSection("professional")}
-            >
-              Informacoes profissionais
-            </MenuButton>
+            {/* Só mostra "Informações profissionais" para profissionais */}
+            {isProfessional && (
+              <MenuButton
+                active={activeSection === "professional"}
+                onClick={() => setActiveSection("professional")}
+              >
+                Informacoes profissionais
+              </MenuButton>
+            )}
           </MenuSection>
 
-          <MenuSection icon={FaTools} title="Servicos">
-            <MenuButton
-              active={activeSection === "services"}
-              onClick={() => setActiveSection("services")}
-            >
-              Ver servicos
-            </MenuButton>
-          </MenuSection>
+          {/* Só mostra seção de serviços para profissionais */}
+          {isProfessional && (
+            <MenuSection icon={FaTools} title="Servicos">
+              <MenuButton
+                active={activeSection === "services"}
+                onClick={() => setActiveSection("services")}
+              >
+                Ver servicos
+              </MenuButton>
+            </MenuSection>
+          )}
 
           <MenuSection icon={FaShieldAlt} title="Seguranca">
             <MenuButton

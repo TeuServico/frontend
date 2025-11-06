@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SessionExpiredModal from "../components/SessionExpiredModal";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
@@ -10,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
   const [expiresAt, setExpiresAt] = useState(null);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const navigate = useNavigate();
 
   // Hidrata estado inicial a partir do localStorage
@@ -29,6 +31,31 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // Ignora erros de parse e segue com estado padrão
     }
+  }, []);
+
+  // Escuta eventos de sessão expirada
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setShowSessionExpiredModal(true);
+      // Limpa os dados de autenticação
+      setUser(null);
+      setIsLoggedIn(false);
+      setToken(null);
+      setRole(null);
+      setExpiresAt(null);
+      try {
+        localStorage.removeItem("ts_auth");
+      } catch {
+        // noop
+      }
+    };
+
+    // Escuta o evento customizado disparado pelo api.js
+    window.addEventListener("session-expired", handleSessionExpired);
+
+    return () => {
+      window.removeEventListener("session-expired", handleSessionExpired);
+    };
   }, []);
 
   const isTokenValid = () => {
@@ -71,12 +98,17 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setRole(null);
     setExpiresAt(null);
+    setShowSessionExpiredModal(false);
     try {
       localStorage.removeItem("ts_auth");
     } catch {
       // noop
     }
     navigate("/");
+  };
+
+  const closeSessionExpiredModal = () => {
+    setShowSessionExpiredModal(false);
   };
 
   return (
@@ -93,6 +125,10 @@ export const AuthProvider = ({ children }) => {
       }}
     >
       {children}
+      <SessionExpiredModal
+        isOpen={showSessionExpiredModal}
+        onClose={closeSessionExpiredModal}
+      />
     </AuthContext.Provider>
   );
 };

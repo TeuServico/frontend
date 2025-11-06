@@ -1,6 +1,6 @@
 
 const BASE_URL = (
-  import.meta?.env?.VITE_API_BASE_URL || "http://localhost:8080"
+    import.meta?.env?.VITE_API_BASE_URL || "http://localhost:8080"
 ).replace(/\/$/, "");
 
 function getStoredAuth() {
@@ -35,12 +35,54 @@ async function request(method, path, { params, body, headers } = {}) {
             // efetua logout simples
             localStorage.removeItem('ts_auth');
         } catch { }
+
+        // Dispara evento customizado para notificar que a sessão expirou
+        // Isso permite que o AuthContext mostre o modal de sessão expirada
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('session-expired'));
+        }
+
         throw new Error('Sessão expirada. Faça login novamente.');
     }
 
     if (!response.ok) {
         const text = await response.text().catch(() => '');
-        throw new Error(`Erro ${response.status}: ${text || response.statusText}`);
+        let errorMessage = response.statusText || 'Erro na requisição';
+
+        // Tenta extrair mensagem amigável do JSON
+        try {
+            if (text) {
+                const jsonError = JSON.parse(text);
+                // Prioriza mensagens específicas do backend
+                if (jsonError.error) {
+                    errorMessage = jsonError.error;
+                } else if (jsonError.message) {
+                    errorMessage = jsonError.message;
+                } else if (typeof jsonError === 'string') {
+                    errorMessage = jsonError;
+                }
+            }
+        } catch {
+            // Se não conseguir parsear, usa a mensagem padrão baseada no status
+            if (response.status === 400) {
+                errorMessage = 'Dados inválidos';
+            } else if (response.status === 401) {
+                errorMessage = 'Credenciais inválidas';
+            } else if (response.status === 403) {
+                errorMessage = 'Acesso negado';
+            } else if (response.status === 404) {
+                errorMessage = 'Recurso não encontrado';
+            } else if (response.status === 409) {
+                errorMessage = 'Senha inválida';
+            } else if (response.status >= 500) {
+                errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
+            }
+        }
+
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        error.originalText = text;
+        throw error;
     }
 
     const contentType = response.headers.get('content-type') || '';
@@ -66,4 +108,12 @@ export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElemento
 
 export async function getClientePerfil() {
     return api.get('/cliente/perfil');
+}
+
+export async function getProfissionalPerfil() {
+    return api.get('/profissional/perfil');
+}
+
+export async function getMinhasOfertas({ pagina = 1, qtdMaximoElementos = 10 }) {
+    return api.get('/ofertaservico/minhasofertas', { pagina, qtdMaximoElementos })
 }

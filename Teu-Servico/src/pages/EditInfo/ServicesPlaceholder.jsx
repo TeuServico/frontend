@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from "react";
 import { FaCheck } from "react-icons/fa";
+// import { api } from "../../services/api";
 
 const FILTERS = [
     { key: "todos", label: "Todos" },

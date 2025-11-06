@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Aside from "../../../components/AsideLogin";
+import LoginErrorModal from "../../../components/LoginErrorModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { api } from "../../../services/api";
+import { getFriendlyErrorMessage } from "../../../utils/errorMessages";
 
 export default function CreateAccount() {
   const { login } = useContext(AuthContext);
@@ -25,6 +27,7 @@ export default function CreateAccount() {
   const [profissao, setProfissao] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const isProfessional = accountType === "profissional";
@@ -176,7 +179,9 @@ export default function CreateAccount() {
         expiresAt,
       });
     } catch (err) {
-      setError(err?.message || "Falha ao criar conta");
+      const friendlyMessage = getFriendlyErrorMessage(err, 'Não foi possível criar a conta. Verifique os dados e tente novamente.');
+      setError(friendlyMessage);
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -635,18 +640,11 @@ export default function CreateAccount() {
           </button>
         </form>
 
-        {error && (
-          <p
-            style={{
-              color: "#c00",
-              marginTop: "12px",
-              fontFamily: "Inter, sans-serif",
-              fontSize: "14px",
-            }}
-          >
-            {error}
-          </p>
-        )}
+        <LoginErrorModal
+          isOpen={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          message={error || 'Não foi possível criar a conta. Verifique os dados e tente novamente.'}
+        />
 
         {/* Link para login */}
         <p

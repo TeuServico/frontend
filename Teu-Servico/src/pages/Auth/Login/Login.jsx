@@ -1,8 +1,10 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import Aside from "../../../components/AsideLogin";
+import LoginErrorModal from "../../../components/LoginErrorModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { api } from "../../../services/api";
+import { getFriendlyErrorMessage } from "../../../utils/errorMessages";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -12,6 +14,7 @@ export default function Login() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +30,9 @@ export default function Login() {
       const displayName = email && email.includes("@") ? email.split("@")[0] : "Usuário";
       login({ user: { name: displayName }, token: acessToken, role, expiresAt });
     } catch (err) {
-      setError(err?.message || 'Falha no login');
+      const friendlyMessage = getFriendlyErrorMessage(err, 'Não foi possível fazer login. Verifique seus dados e tente novamente.');
+      setError(friendlyMessage);
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -128,11 +133,11 @@ export default function Login() {
           </button>
         </form>
 
-        {error && (
-          <p style={{ color: '#c00', marginTop: '12px', fontFamily: 'Inter, sans-serif', fontSize: '14px' }}>
-            {error}
-          </p>
-        )}
+        <LoginErrorModal
+          isOpen={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          message={error || 'Não foi possível fazer login. Verifique seus dados e tente novamente.'}
+        />
 
         <p
           style={{

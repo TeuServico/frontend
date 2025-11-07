@@ -34,7 +34,9 @@ async function request(method, path, { params, body, headers } = {}) {
         try {
             // efetua logout simples
             localStorage.removeItem('ts_auth');
-        } catch { }
+        } catch {
+            // Ignora erros ao remover do localStorage
+        }
 
         // Dispara evento customizado para notificar que a sessão expirou
         // Isso permite que o AuthContext mostre o modal de sessão expirada
@@ -73,7 +75,7 @@ async function request(method, path, { params, body, headers } = {}) {
             } else if (response.status === 404) {
                 errorMessage = 'Recurso não encontrado';
             } else if (response.status === 409) {
-                errorMessage = 'Senha inválida';
+                errorMessage = 'Conflito: este recurso já existe ou está em uso';
             } else if (response.status >= 500) {
                 errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
             }
@@ -116,4 +118,13 @@ export async function getProfissionalPerfil() {
 
 export async function getMinhasOfertas({ pagina = 1, qtdMaximoElementos = 10 }) {
     return api.get('/ofertaservico/minhasofertas', { pagina, qtdMaximoElementos })
+}
+
+export async function criarOfertaServico({ tipoServicoNome, tipoServicoCategoria, descricao, tags }) {
+    return api.post('/ofertaservico/criar', {
+        tipoServicoNome,
+        tipoServicoCategoria,
+        descricao,
+        tags,
+    });
 }

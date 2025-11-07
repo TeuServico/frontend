@@ -17,102 +17,6 @@ function useDebouncedValue(value, delayMs) {
   return debounced;
 }
 
-// Dados mockados para demonstração
-const mockData = [
-  {
-    id: "1",
-    profissionalNome: "João Silva",
-    descricao:
-      "Desenvolvedor Full Stack com mais de 5 anos de experiência em desenvolvimento web. Especializado em React, Node.js e bancos de dados relacionais. Sempre buscando entregar soluções de alta qualidade e performance.",
-    tags: [
-      "Java",
-      "Spring",
-      "React",
-      "Node.js",
-      "TypeScript",
-      "PostgreSQL",
-      "MongoDB",
-    ],
-  },
-  {
-    id: "2",
-    profissionalNome: "Maria Santos",
-    descricao:
-      "Designer UX/UI apaixonada por criar experiências digitais incríveis. Trabalho com Figma, Adobe XD e design systems. Tenho experiência em projetos para startups e grandes empresas.",
-    tags: ["Figma", "Adobe XD", "UI/UX", "Design Systems", "Prototipagem"],
-  },
-  {
-    id: "3",
-    profissionalNome: "Carlos Oliveira",
-    descricao:
-      "Eletricista profissional com certificação e mais de 10 anos de experiência. Realizo instalações elétricas residenciais e comerciais, manutenção e reparos. Trabalho com garantia e orçamento sem compromisso.",
-    tags: ["Instalação Elétrica", "Manutenção", "Residencial", "Comercial"],
-  },
-  {
-    id: "4",
-    profissionalNome: "Ana Costa",
-    descricao:
-      "Nutricionista clínica especializada em emagrecimento e reeducação alimentar. Atendimento presencial e online. Desenvolvimento de planos alimentares personalizados baseados em evidências científicas.",
-    tags: ["Nutrição Clínica", "Emagrecimento", "Consultoria", "Online"],
-  },
-  {
-    id: "5",
-    profissionalNome: "Pedro Almeida",
-    descricao:
-      "Pintor profissional com experiência em pintura residencial e comercial. Trabalho com todas as técnicas: textura, esponjado, estêncil e muito mais. Orçamento gratuito e entrega no prazo.",
-    tags: ["Pintura", "Residencial", "Textura", "Reformas"],
-  },
-  {
-    id: "6",
-    profissionalNome: "Juliana Ferreira",
-    descricao:
-      "Fotógrafa profissional especializada em eventos, casamentos e ensaios. Trabalho com equipamentos de alta qualidade e edição profissional. Pacotes personalizados para cada ocasião.",
-    tags: ["Fotografia", "Casamentos", "Eventos", "Ensaio"],
-  },
-  {
-    id: "7",
-    profissionalNome: "Roberto Martins",
-    descricao:
-      "Personal trainer com certificação internacional. Treinamento funcional, musculação e condicionamento físico. Atendimento em domicílio e na academia. Planos personalizados para seus objetivos.",
-    tags: ["Personal Trainer", "Funcional", "Musculação", "Domicílio"],
-  },
-  {
-    id: "8",
-    profissionalNome: "Fernanda Lima",
-    descricao:
-      "Psicóloga clínica com experiência em terapia cognitivo-comportamental. Atendimento para adultos, adolescentes e casais. Problemas de ansiedade, depressão e relacionamentos.",
-    tags: ["Psicologia", "TCC", "Ansiedade", "Terapia"],
-  },
-  {
-    id: "9",
-    profissionalNome: "Lucas Pereira",
-    descricao:
-      "Contador especializado em abertura de empresas, consultoria tributária e assessoria contábil. Atendimento para MEI, ME e empresas de todos os portes. Agilidade e confiança.",
-    tags: ["Contabilidade", "Abertura de Empresas", "MEI", "Consultoria"],
-  },
-  {
-    id: "10",
-    profissionalNome: "Beatriz Souza",
-    descricao:
-      "Arquiteta com foco em projetos residenciais e comerciais. Desenvolvimento de projetos executivos, 3D e acompanhamento de obra. Mais de 8 anos de experiência no mercado.",
-    tags: ["Arquitetura", "Projetos", "3D", "Execução"],
-  },
-  {
-    id: "11",
-    profissionalNome: "Rafael Torres",
-    descricao:
-      "Marceneiro especializado em móveis planejados e móveis sob medida. Trabalho com madeira nobre e MDF. Projetos personalizados para cozinhas, quartos e salas.",
-    tags: ["Marcenaria", "Móveis Planejados", "Sob Medida", "Design"],
-  },
-  {
-    id: "12",
-    profissionalNome: "Camila Rocha",
-    descricao:
-      "Cabeleireira e colorista profissional. Corte, coloração, mechas e tratamentos capilares. Atendimento em salão ou domicílio. Produtos de alta qualidade e técnicas modernas.",
-    tags: ["Cabeleireira", "Coloração", "Mechas", "Tratamentos"],
-  },
-];
-
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState([]);
@@ -157,70 +61,30 @@ export default function Search() {
 
   useEffect(() => {
     async function fetchData() {
-      // Se não há busca, mostrar dados mockados
-      if (!debouncedNome) {
-        // Simular paginação com dados mockados
-        const inicio = (pagina - 1) * limit;
-        const fim = inicio + limit;
-        const itemsPaginados = mockData.slice(inicio, fim);
-        setItems(itemsPaginados);
-        setTotalPaginas(Math.ceil(mockData.length / limit));
-        return;
-      }
-
       setLoading(true);
       setError("");
       try {
+        // Sempre chamar a API, mesmo quando não há palavra-chave (passar string vazia)
         const data = await buscarOfertasPorTipo({
-          nome: debouncedNome,
+          nome: debouncedNome || "",
           pagina,
           qtdMaximoElementos: limit,
         });
         const conteudo = Array.isArray(data?.conteudo) ? data.conteudo : [];
         setItems(conteudo);
 
-        // Se o backend retornar totalPaginas, usar. Caso contrário, calcular
+        // Usar totalPaginas do backend ou calcular baseado no totalElementos
         if (data?.totalPaginas) {
           setTotalPaginas(data.totalPaginas);
+        } else if (data?.totalElementos) {
+          setTotalPaginas(Math.ceil(data.totalElementos / limit));
         } else {
-          // Se não há dados do backend, usar dados mockados filtrados
-          const filtrados = mockData.filter(
-            (item) =>
-              item.profissionalNome
-                .toLowerCase()
-                .includes(debouncedNome.toLowerCase()) ||
-              item.descricao
-                .toLowerCase()
-                .includes(debouncedNome.toLowerCase()) ||
-              item.tags.some((tag) =>
-                tag.toLowerCase().includes(debouncedNome.toLowerCase())
-              )
-          );
-          const inicio = (pagina - 1) * limit;
-          const fim = inicio + limit;
-          const itemsPaginados = filtrados.slice(inicio, fim);
-          setItems(itemsPaginados);
-          setTotalPaginas(Math.ceil(filtrados.length / limit));
+          setTotalPaginas(conteudo.length > 0 ? 1 : 0);
         }
-      } catch {
-        // Em caso de erro, usar dados mockados filtrados
-        const filtrados = mockData.filter(
-          (item) =>
-            item.profissionalNome
-              .toLowerCase()
-              .includes(debouncedNome.toLowerCase()) ||
-            item.descricao
-              .toLowerCase()
-              .includes(debouncedNome.toLowerCase()) ||
-            item.tags.some((tag) =>
-              tag.toLowerCase().includes(debouncedNome.toLowerCase())
-            )
-        );
-        const inicio = (pagina - 1) * limit;
-        const fim = inicio + limit;
-        const itemsPaginados = filtrados.slice(inicio, fim);
-        setItems(itemsPaginados);
-        setTotalPaginas(Math.ceil(filtrados.length / limit));
+      } catch (err) {
+        setError(err?.message || "Erro ao buscar ofertas. Tente novamente.");
+        setItems([]);
+        setTotalPaginas(0);
       } finally {
         setLoading(false);
       }
@@ -390,9 +254,11 @@ export default function Search() {
         {!loading && error && (
           <div className="text-center text-red-600 py-8">{error}</div>
         )}
-        {!loading && !error && debouncedNome && items.length === 0 && (
+        {!loading && !error && items.length === 0 && (
           <div className="text-center text-[#002C57] py-8">
-            Nenhum resultado encontrado
+            {debouncedNome
+              ? "Nenhum resultado encontrado"
+              : "Digite uma palavra-chave para buscar ofertas de serviço"}
           </div>
         )}
 

@@ -10,6 +10,7 @@ import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 // Home removido - landing agora é App.jsx
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
 // import CallToAction from "../pages/Home/CallToAction"
+import CreateServiceOffer from "../pages/CreateServiceOffer/CreateServiceOffer";
 import { EditInfo } from "../pages/EditInfo/EditInfor";
 import Search from "../pages/Search/Search";
 
@@ -38,6 +39,14 @@ export const AppRoutes = () => {
                     element={
                         <ProtectedRoute>
                             <ProfessionalProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/criar-oferta"
+                    element={
+                        <ProtectedRoute>
+                            <CreateServiceOffer />
                         </ProtectedRoute>
                     }
                 />

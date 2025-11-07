@@ -15,8 +15,15 @@ export function getFriendlyErrorMessage(error, defaultMessage = 'Não foi possí
     return 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.';
   }
 
-  if (status === 409 || errorMessage.includes('409') || errorMessage.includes('Senha inválida') || errorMessage.toLowerCase().includes('senha')) {
+  // Status 409 pode ser usado para vários tipos de conflito, não apenas senha
+  // Só retornar mensagem de senha se a mensagem realmente mencionar senha
+  if (status === 409 && (errorMessage.includes('Senha inválida') || errorMessage.toLowerCase().includes('senha'))) {
     return 'Senha inválida. Verifique sua senha e tente novamente.';
+  }
+
+  // Se for 409 mas não mencionar senha, usar mensagem genérica de conflito
+  if (status === 409) {
+    return errorMessage || 'Conflito: este recurso já existe ou está em uso.';
   }
 
   if (status === 400 || errorMessage.includes('400') || errorMessage.includes('Dados inválidos')) {

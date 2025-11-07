@@ -320,6 +320,11 @@ const EditInfo = () => {
               >
                 Ver servicos
               </MenuButton>
+              <MenuButton
+                onClick={() => navigate("/criar-oferta")}
+              >
+                Criar nova oferta
+              </MenuButton>
             </MenuSection>
           )}
 

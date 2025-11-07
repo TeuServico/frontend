@@ -6,7 +6,8 @@ import { AuthContext } from "../context/AuthContext";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isLoggedIn, user, login, logout } = useContext(AuthContext);
+  const { isLoggedIn, user, login, logout, role } = useContext(AuthContext);
+  const isProfessional = role === "PROFISSIONAL" || role === "Profissional";
 
   const navigate = useNavigate();
 
@@ -34,6 +35,11 @@ export function Header() {
           <Link to="/buscar" className="text-[#002C57] hover:text-[#F69027]">
             Encontrar Profissionais
           </Link>
+          {isLoggedIn && isProfessional && (
+            <Link to="/criar-oferta" className="text-[#002C57] hover:text-[#F69027]">
+              Criar Oferta
+            </Link>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -134,6 +140,15 @@ export function Header() {
             >
               Encontrar Profissionais
             </Link>
+            {isLoggedIn && isProfessional && (
+              <Link
+                to="/criar-oferta"
+                className="hover:text-gray-400 text-center"
+                style={{ color: "#002C57" }}
+              >
+                Criar Oferta
+              </Link>
+            )}
           </nav>
         </div>
       )}

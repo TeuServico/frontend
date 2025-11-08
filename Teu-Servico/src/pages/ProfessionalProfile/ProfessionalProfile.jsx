@@ -1,10 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Footer } from "../../components/Footer";
 import { Header } from "../../components/Header";
 import { useChat } from "../../context/ChatContext";
+import { getProfissionalPerfil } from "../../services/api";
 
 const ProfessionalProfile = () => {
   const { openChat } = useChat();
+  const navigate = useNavigate();
+  const [perfil, setPerfil] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function fetchPerfil() {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await getProfissionalPerfil();
+        setPerfil(data);
+      } catch (err) {
+        setError(err?.message || "Erro ao carregar perfil. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPerfil();
+  }, []);
   return (
     <>
       <Header />
@@ -12,7 +34,10 @@ const ProfessionalProfile = () => {
       <div className="w-screen h-[2px] bg-[#002C57] mb-20" />
 
       <div className="max-w-6xl mx-auto px-4 mt-6 mb-4">
-        <button className="flex items-center gap-2 cursor-pointer">
+        <button
+          onClick={() => navigate("/buscar")}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <div className="w-8 h-8 rounded-full bg-[#F69027] flex items-center justify-center">
             <span className="text-[#002C57] text-2xl">&#9668;</span>
           </div>
@@ -23,100 +48,138 @@ const ProfessionalProfile = () => {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-10 bg-white">
-        {/* TOPO DO PERFIL */}
-        <section className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          {/* FOTO */}
-          <div className="w-40 h-40 bg-gray-200 rounded-md overflow-hidden" />
-
-          {/* INFO DO PERFIL */}
-          <div className="flex-1 space-y-2 text-center md:text-left">
-            <h2 className="text-2xl font-bold text-[#002C57]">João da Silva</h2>
-            <p className="text-[#F69027] font-medium">Eletricista</p>
-
-            {/* AVALIAÇÃO */}
-            <div className="flex items-center justify-center md:justify-start gap-1 text-[#F69027]">
-              {"★".repeat(5)}
-              <span className="text-[#F69027] text-sm">
-                (4.80 - 50 avaliações)
-              </span>
-            </div>
-
-            {/* INFOS ADICIONAIS */}
-            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start text-sm text-[#002C57] mt-2 gap-2 text-center md:text-left">
-              <p>
-                <strong className="text-[#002C57]">Serviços concluídos:</strong>{" "}
-                <span className="text-[#F69027]">55</span>
-              </p>
-              <span className="hidden md:inline">|</span>
-              <p>
-                <strong className="text-[#002C57]">Recomendações:</strong>{" "}
-                <span className="text-[#F69027]">40</span>
-              </p>
-              <span className="hidden md:inline">|</span>
-              <p>
-                <strong className="text-[#002C57]">Cadastrado desde:</strong>{" "}
-                <span className="text-[#F69027]">20/08/2025</span>
-              </p>
-            </div>
-
-            {/* BOTÃO CONVERSAR */}
-            <div className="mt-4">
-              <button
-                onClick={() => openChat({ profissionalNome: "João da Silva" })}
-                className="bg-[#F69027] text-[#002C57] px-12 py-1.5 rounded font-semibold border border-[#002C57] hover:brightness-110 transition cursor-pointer w-full max-w-xs mx-auto md:mx-0"
-              >
-                Conversar
-              </button>
-            </div>
+        {loading && (
+          <div className="text-center text-[#002C57] py-8">
+            Carregando perfil...
           </div>
-        </section>
+        )}
 
-        {/* HABILIDADES */}
-        <section className="mt-10">
-          <h3 className="text-lg font-semibold text-[#F69027] mb-3">
-            Habilidades:
-          </h3>
-          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-            {[
-              "Elétrica residencial",
-              "Manutenção preventiva",
-              "Instalação de chuveiro",
-              "Quadros de energia",
-            ].map((skill, idx) => (
-              <span
-                key={idx}
-                className="bg-[#F69027] text-[#002C57] px-3 py-1 text-sm rounded-full border border-[#002C57]"
-              >
-                {skill}
-              </span>
-            ))}
+        {error && (
+          <div className="rounded-xl border border-red-300 bg-red-50 p-6 text-center text-sm text-red-700">
+            {error}
           </div>
-        </section>
+        )}
 
-        {/* SOBRE MIM */}
-        <section className="mt-10">
-          <h3 className="text-lg font-semibold text-[#F69027] mb-2">
-            Sobre mim:
-          </h3>
-          <p className="text-[#002C57] text-justify">
-            Sou um profissional dedicado e apaixonado pelo que faço. Tenho
-            experiência em serviços residenciais e comerciais, prezando sempre
-            pela qualidade, segurança e satisfação do cliente.
-          </p>
-        </section>
+        {!loading && !error && perfil && (
+          <>
+            {/* TOPO DO PERFIL */}
+            <section className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              {/* FOTO */}
+              <div className="w-40 h-40 bg-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+                {perfil.foto ? (
+                  <img
+                    src={perfil.foto}
+                    alt={perfil.nomeCompleto}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#F69027] to-[#002C57] opacity-20" />
+                )}
+              </div>
 
-        {/* EXPERIÊNCIA PROFISSIONAL */}
-        <section className="mt-10">
-          <h3 className="text-lg font-semibold text-[#F69027] mb-2">
-            Experiências:
-          </h3>
-          <p className="text-[#002C57] text-justify">
-            Tenho 5 anos de experiência com instalações elétricas residenciais e
-            comerciais, atuando em projetos de manutenção preventiva e
-            corretiva. Também trabalho com leitura e interpretação de esquemas
-            elétricos, sempre prezando pela segurança e qualidade dos serviços.
-          </p>
-        </section>
+              {/* INFO DO PERFIL */}
+              <div className="flex-1 space-y-2 text-center md:text-left">
+                <h2 className="text-2xl font-bold text-[#002C57]">
+                  {perfil.nomeCompleto || "Nome não informado"}
+                </h2>
+                <p className="text-[#F69027] font-medium">
+                  {perfil.profissao || "Profissão não informada"}
+                </p>
+
+                {/* AVALIAÇÃO - Manter mockado por enquanto se não vier do backend */}
+                <div className="flex items-center justify-center md:justify-start gap-1 text-[#F69027]">
+                  {"★".repeat(5)}
+                  <span className="text-[#F69027] text-sm">
+                    (4.80 - 50 avaliações)
+                  </span>
+                </div>
+
+                {/* INFOS ADICIONAIS - Manter mockado por enquanto se não vier do backend */}
+                <div className="flex flex-col md:flex-row items-center justify-center md:justify-start text-sm text-[#002C57] mt-2 gap-2 text-center md:text-left">
+                  <p>
+                    <strong className="text-[#002C57]">
+                      Serviços concluídos:
+                    </strong>{" "}
+                    <span className="text-[#F69027]">55</span>
+                  </p>
+                  <span className="hidden md:inline">|</span>
+                  <p>
+                    <strong className="text-[#002C57]">Recomendações:</strong>{" "}
+                    <span className="text-[#F69027]">40</span>
+                  </p>
+                  <span className="hidden md:inline">|</span>
+                  <p>
+                    <strong className="text-[#002C57]">Email:</strong>{" "}
+                    <span className="text-[#F69027]">
+                      {perfil.email || "Não informado"}
+                    </span>
+                  </p>
+                </div>
+
+                {/* BOTÃO CONVERSAR */}
+                <div className="mt-4">
+                  <button
+                    onClick={() =>
+                      openChat({
+                        profissionalNome: perfil.nomeCompleto,
+                        profissionalId: perfil.id,
+                      })
+                    }
+                    className="bg-[#F69027] text-[#002C57] px-12 py-1.5 rounded font-semibold border border-[#002C57] hover:brightness-110 transition cursor-pointer w-full max-w-xs mx-auto md:mx-0"
+                  >
+                    Conversar
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* HABILIDADES - Por enquanto vazio, pode ser adicionado no backend no futuro */}
+            <section className="mt-10">
+              <h3 className="text-lg font-semibold text-[#F69027] mb-3">
+                Habilidades:
+              </h3>
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                {perfil.habilidades && perfil.habilidades.length > 0 ? (
+                  perfil.habilidades.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-[#F69027] text-[#002C57] px-3 py-1 text-sm rounded-full border border-[#002C57]"
+                    >
+                      {typeof skill === "string" ? skill : skill.nome || skill}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-[#002C57] text-sm italic">
+                    Nenhuma habilidade cadastrada
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* SOBRE MIM */}
+            <section className="mt-10">
+              <h3 className="text-lg font-semibold text-[#F69027] mb-2">
+                Sobre mim:
+              </h3>
+              <p className="text-[#002C57] text-justify">
+                {perfil.sobreMim ||
+                  "Nenhuma informação sobre o profissional disponível."}
+              </p>
+            </section>
+
+            {/* EXPERIÊNCIA PROFISSIONAL - Por enquanto usando sobreMim, pode ser adicionado campo específico no backend */}
+            {perfil.experiencias && (
+              <section className="mt-10">
+                <h3 className="text-lg font-semibold text-[#F69027] mb-2">
+                  Experiências:
+                </h3>
+                <p className="text-[#002C57] text-justify">
+                  {perfil.experiencias}
+                </p>
+              </section>
+            )}
+          </>
+        )}
 
         {/* SERVIÇOS AVALIADOS */}
         <section className="bg-white p-6 rounded-lg mt-6">

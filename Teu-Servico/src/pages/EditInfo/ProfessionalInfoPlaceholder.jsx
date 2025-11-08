@@ -1,58 +1,81 @@
-import React, { useState } from "react";
-import { FaTimes } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import {
+  atualizarPerfilProfissional,
+  getProfissionalPerfil,
+} from "../../services/api";
+import { getFriendlyErrorMessage } from "../../utils/errorMessages";
 
 export const ProfessionalInfoPlaceholder = () => {
-  const [skills, setSkills] = useState([
-    "Java",
-    "Design",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Tag",
-    "Criação",
-  ]);
-  const [newSkill, setNewSkill] = useState("");
   const [aboutMe, setAboutMe] = useState("");
-  const [experiences, setExperiences] = useState("");
+  const [originalAboutMe, setOriginalAboutMe] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [perfilData, setPerfilData] = useState(null);
 
-  const handleAddSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
+  // Verifica se houve mudanças
+  const hasChanges = aboutMe.trim() !== originalAboutMe.trim();
+
+  useEffect(() => {
+    async function fetchPerfil() {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await getProfissionalPerfil();
+        setPerfilData(data);
+
+        // Carregar sobre mim
+        if (data?.sobreMim) {
+          setAboutMe(data.sobreMim);
+          setOriginalAboutMe(data.sobreMim);
+        }
+      } catch (err) {
+        setError(
+          err?.message ||
+            "Erro ao carregar informações do perfil. Tente novamente."
+        );
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+    fetchPerfil();
+  }, []);
 
-  const handleRemoveSkill = (skillToRemove) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove));
-  };
+  const handleSave = async () => {
+    if (!perfilData) {
+      setError("Dados do perfil não carregados. Recarregue a página.");
+      return;
+    }
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddSkill();
+    if (!hasChanges) {
+      return; // Não faz nada se não houve mudanças
+    }
+
+    setSaving(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      // Montar o payload com todos os dados do perfil, atualizando apenas o sobreMim
+      // Removendo CPF para evitar erro de "já cadastrado"
+      const profissionalRequestDTO = {
+        nomeCompleto: perfilData.nomeCompleto,
+        telefone: perfilData.telefone,
+        // cpf: perfilData.cpf, // Removido para evitar erro de duplicação
+        endereco: perfilData.endereco,
+        sobreMim: aboutMe.trim(),
+        profissao: perfilData.profissao,
+      };
+
+      await atualizarPerfilProfissional(profissionalRequestDTO);
+      setSuccess(true);
+      setOriginalAboutMe(aboutMe.trim()); // Atualiza o original após salvar
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(getFriendlyErrorMessage(err));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -66,100 +89,63 @@ export const ProfessionalInfoPlaceholder = () => {
         Gerencie seu perfil profissional
       </h2>
 
-      {/* Seção: Habilidades */}
-      <div className="flex flex-col gap-2">
-        <label
-          className="text-base font-semibold text-[#002C57]"
-          style={{ fontFamily: "Inter", lineHeight: "22.4px" }}
-        >
-          Habilidades
-        </label>
-        <div className="w-full rounded-lg border border-[#F69027] bg-white p-4 min-h-[163px] flex flex-col gap-4">
-          {/* Grid de tags */}
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleRemoveSkill(skill)}
-                className="flex items-center justify-center gap-1 rounded-lg border border-[#002C57] bg-[#F69027] px-3 py-2 text-base font-semibold text-white transition hover:bg-[#d96c15]"
-                style={{ fontFamily: "Inter" }}
-              >
-                {skill}
-                <FaTimes className="text-xs" />
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={handleAddSkill}
-              className="flex items-center justify-center gap-1 rounded-lg border border-[#002C57] bg-white px-3 py-2 text-base font-semibold text-[#F69027] transition hover:bg-[#fff2e4]"
-              style={{ fontFamily: "Inter" }}
+      {loading && (
+        <div className="text-center text-[#002C57] py-8">
+          Carregando informações...
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-xl border border-red-300 bg-red-50 p-6 text-center text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Seção: Sobre mim */}
+          <div className="flex flex-col gap-2">
+            <label
+              className="text-base font-semibold text-[#002C57]"
+              style={{ fontFamily: "Inter", lineHeight: "22.4px" }}
             >
-              +mais
-            </button>
+              Sobre mim
+            </label>
+            <div className="w-full rounded-lg border border-[#F69027] bg-white">
+              <textarea
+                value={aboutMe}
+                onChange={(e) => setAboutMe(e.target.value)}
+                placeholder="Conte um pouco sobre você, suas experiências e habilidades..."
+                className="w-full rounded-lg border-0 bg-transparent px-4 py-3 text-base font-normal text-[#002C57] focus:outline-none min-h-[163px] resize-y"
+                style={{ fontFamily: "Inter", padding: "12px 16px" }}
+              />
+            </div>
           </div>
-          {/* Input para adicionar habilidades */}
-          <input
-            type="text"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Digite uma nova habilidade e pressione Enter..."
-            className="w-full rounded-lg border border-[#F69027] bg-white px-4 py-3 text-base font-normal text-[#002C57] focus:outline-none focus:border-[#002C57]"
-            style={{ fontFamily: "Inter" }}
-          />
-        </div>
-      </div>
 
-      {/* Seção: Sobre mim */}
-      <div className="flex flex-col gap-2">
-        <label
-          className="text-base font-semibold text-[#002C57]"
-          style={{ fontFamily: "Inter", lineHeight: "22.4px" }}
-        >
-          Sobre mim
-        </label>
-        <div className="w-full rounded-lg border border-[#F69027] bg-white">
-          <textarea
-            value={aboutMe}
-            onChange={(e) => setAboutMe(e.target.value)}
-            placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem. Ut enim ad minima veniam, quis nostrum......"
-            className="w-full rounded-lg border-0 bg-transparent px-4 py-3 text-base font-normal text-[#002C57] focus:outline-none min-h-[163px] resize-y"
-            style={{ fontFamily: "Inter", padding: "12px 16px" }}
-          />
-        </div>
-      </div>
+          {/* Mensagens de erro e sucesso */}
+          {error && (
+            <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-      {/* Seção: Experiências */}
-      <div className="flex flex-col gap-2">
-        <label
-          className="text-base font-semibold text-[#002C57]"
-          style={{ fontFamily: "Inter", lineHeight: "22.4px" }}
-        >
-          Experiências
-        </label>
-        <div className="w-full rounded-lg border border-[#F69027] bg-white">
-          <textarea
-            value={experiences}
-            onChange={(e) => setExperiences(e.target.value)}
-            placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem. Ut enim ad minima veniam, quis nostrum......."
-            className="w-full rounded-lg border-0 bg-transparent px-4 py-3 text-base font-normal text-[#002C57] focus:outline-none min-h-[163px] resize-y"
-            style={{ fontFamily: "Inter", padding: "12px 16px" }}
-          />
-        </div>
-      </div>
+          {success && (
+            <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-700">
+              Informações salvas com sucesso!
+            </div>
+          )}
 
-      {/* Botão de salvar (opcional) */}
-      <button
-        type="button"
-        onClick={() => {
-          console.log("Dados salvos:", { skills, aboutMe, experiences });
-          // Aqui você pode adicionar a lógica para salvar no backend
-        }}
-        className="self-center rounded-full bg-[#F69027] px-10 py-3 text-lg font-semibold text-white shadow-md transition hover:brightness-110"
-      >
-        Salvar alterações
-      </button>
+          {/* Botão de salvar */}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+            className="self-center rounded-full bg-[#F69027] px-10 py-3 text-lg font-semibold text-white shadow-md transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </button>
+        </>
+      )}
     </div>
   );
 };

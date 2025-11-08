@@ -97,6 +97,7 @@ async function request(method, path, { params, body, headers } = {}) {
 export const api = {
     get: (path, params) => request('GET', path, { params }),
     post: (path, body) => request('POST', path, { body }),
+    put: (path, body) => request('PUT', path, { body }),
 };
 
 // Chamada real ao backend para buscar ofertas por nome do tipo de serviço
@@ -126,5 +127,14 @@ export async function criarOfertaServico({ tipoServicoNome, tipoServicoCategoria
         tipoServicoCategoria,
         descricao,
         tags,
+    });
+}
+
+export async function atualizarPerfilProfissional(profissionalRequestDTO) {
+    // Usa o mesmo endpoint de criar, mas para atualizar
+    // O backend deve identificar que é uma atualização baseado no token/contexto
+    // Não envia credenciais pois é uma atualização (não precisa de senha)
+    return api.post('/profissional/criar', {
+        profissionalRequestDTO,
     });
 }

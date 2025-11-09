@@ -27,6 +27,14 @@ export default function Search() {
 
   const [nome, setNome] = useState(nomeParam);
   const [nomeBusca, setNomeBusca] = useState(nomeParam); // Nome usado na busca (atualizado apenas com Enter)
+
+  // Quando o nomeParam mudar (vindo da URL), atualizar nomeBusca para fazer a busca
+  useEffect(() => {
+    if (nomeParam) {
+      setNomeBusca(nomeParam);
+      setNome(nomeParam);
+    }
+  }, [nomeParam]);
   const [pagina, setPagina] = useState(paginaParam);
   const [limit] = useState(limitParam);
 

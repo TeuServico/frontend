@@ -1,8 +1,26 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 export function Hero() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const navigate = useNavigate();
+
+    const handleSearch = () => {
+        if (searchTerm.trim()) {
+            navigate(`/buscar?nome=${encodeURIComponent(searchTerm.trim())}`);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            handleSearch();
+        }
+    };
+
     return (
         <section className="bg-white py-16">
             <div className="container mx-auto px-4 text-center">
-                
+
                 <h1 className="text-3xl md:text-5xl font-bold text-[#002C57] leading-tight mb-6">
                     Resolva seu problema de forma{" "}
                     <span className="text-[#F69027]">rápida</span> e{" "}
@@ -16,14 +34,19 @@ export function Hero() {
                 <div className="flex flex-col md:flex-row justify-center items-center gap-3 mb-10">
                     <input
                         type="text"
-                        placeholder="O que você precisa..."
-                        className="w-full md:w-96 px-4 py-3 border border-[#002C57] rounded-md 
+                        placeholder="O que você precisa... (pressione Enter para buscar)"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-full md:w-96 px-4 py-3 border border-[#002C57] rounded-md
                                    focus:outline-none focus:ring-2 focus:ring-[#F69027]
                                    transition duration-300 ease-in-out"
                     />
-                    <button className="bg-[#F69027] text-[#002C57] font-semibold px-6 py-3 rounded-md 
-                                       hover:bg-[#d96c15] transform hover:scale-105 
-                                       transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+                    <button
+                        onClick={handleSearch}
+                        className="bg-[#F69027] text-[#002C57] font-semibold px-6 py-3 rounded-md
+                                   hover:bg-[#d96c15] transform hover:scale-105
+                                   transition duration-300 ease-in-out shadow-md hover:shadow-lg">
                         Buscar
                     </button>
                 </div>

@@ -1,22 +1,67 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { buscarTiposServico } from "../services/api";
 
-const FilterModal = ({ isOpen, onClose, onApply, categoriasSelecionadas = [], tagsSelecionadas = [] }) => {
-  const [selectedCategorias, setSelectedCategorias] = useState(categoriasSelecionadas);
+const FilterModal = ({
+  isOpen,
+  onClose,
+  onApply,
+  categoriasSelecionadas = [],
+  tagsSelecionadas = [],
+}) => {
+  const [selectedCategorias, setSelectedCategorias] = useState(
+    categoriasSelecionadas
+  );
   const [selectedTags, setSelectedTags] = useState(tagsSelecionadas);
+  const [categorias, setCategorias] = useState([]);
+  const [loadingCategorias, setLoadingCategorias] = useState(false);
 
-  // Dados mockados para categorias e tags
-  const categorias = [
-    "Programação",
-    "Design",
-    "Moda",
-    "Reforma",
-    "Categoria",
-    "Categoria",
-    "Categoria",
-    "Categoria",
-    "Categoria",
-    "Categoria",
-  ];
+  // Sincronizar categorias selecionadas quando mudarem externamente
+  useEffect(() => {
+    setSelectedCategorias(categoriasSelecionadas);
+  }, [categoriasSelecionadas]);
+
+  // Buscar categorias disponíveis ao abrir o modal
+  useEffect(() => {
+    if (isOpen && categorias.length === 0) {
+      async function fetchCategorias() {
+        setLoadingCategorias(true);
+        try {
+          // Buscar todos os tipos de serviço para extrair categorias únicas
+          const data = await buscarTiposServico({
+            pagina: 1,
+            qtdMaximaElementos: 1000, // Buscar muitos para pegar todas as categorias
+          });
+          const conteudo = Array.isArray(data?.conteudo) ? data.conteudo : [];
+
+          // Extrair categorias únicas
+          const categoriasUnicas = [
+            ...new Set(conteudo.map((item) => item.categoria).filter(Boolean)),
+          ];
+          setCategorias(categoriasUnicas.sort());
+        } catch (err) {
+          console.error("Erro ao buscar categorias:", err);
+          // Fallback para categorias padrão se der erro
+          setCategorias([
+            "PROGRAMAÇÃO",
+            "DESIGN",
+            "REFORMA",
+            "ELÉTRICA",
+            "HIDRÁULICA",
+            "PINTURA",
+            "MARCENARIA",
+            "FRETE",
+            "EDUCAÇÃO",
+            "MARKETING",
+            "CONSULTORIA",
+            "OUTROS",
+          ]);
+        } finally {
+          setLoadingCategorias(false);
+        }
+      }
+      fetchCategorias();
+    }
+  }, [isOpen, categorias.length]);
 
   const tags = [
     "Java",
@@ -161,12 +206,7 @@ const FilterModal = ({ isOpen, onClose, onApply, categoriasSelecionadas = [], ta
             onClick={onClose}
             className="text-[#002C57] hover:opacity-70 transition-opacity flex-shrink-0"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 d="M15 18L9 12L15 6"
                 stroke="currentColor"
@@ -188,12 +228,18 @@ const FilterModal = ({ isOpen, onClose, onApply, categoriasSelecionadas = [], ta
         {/* Body */}
         <div className="p-6 space-y-6">
           {/* Seção Categorias */}
-          <FilterSection
-            title="Categorias"
-            items={categorias}
-            selectedItems={selectedCategorias}
-            onToggle={handleCategoriaToggle}
-          />
+          {loadingCategorias ? (
+            <div className="bg-white border border-[#002C57] rounded-lg p-4 text-center text-[#002C57]">
+              Carregando categorias...
+            </div>
+          ) : (
+            <FilterSection
+              title="Categorias"
+              items={categorias}
+              selectedItems={selectedCategorias}
+              onToggle={handleCategoriaToggle}
+            />
+          )}
 
           {/* Seção Tags */}
           <FilterSection

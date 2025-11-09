@@ -6,16 +6,7 @@ import FilterModal from "../../components/FilterModal";
 import { Footer } from "../../components/Footer";
 import { Header } from "../../components/Header";
 import ServiceCard from "../../components/ServiceCard";
-import { buscarTiposServico } from "../../services/api";
-
-function useDebouncedValue(value, delayMs) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(id);
-  }, [value, delayMs]);
-  return debounced;
-}
+import { buscarTiposServico, buscarTiposServicoPorCategoria, buscarOfertasPorTipo } from "../../services/api";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -35,18 +26,17 @@ export default function Search() {
   const nomeParam = searchParams.get("nome") || "";
 
   const [nome, setNome] = useState(nomeParam);
+  const [nomeBusca, setNomeBusca] = useState(nomeParam); // Nome usado na busca (atualizado apenas com Enter)
   const [pagina, setPagina] = useState(paginaParam);
   const [limit] = useState(limitParam);
 
-  const debouncedNome = useDebouncedValue(nome, 300);
-
   const stateToQuery = useMemo(
     () => ({
-      nome: debouncedNome,
+      nome: nomeBusca,
       pagina: String(pagina),
       limit: String(limit),
     }),
-    [debouncedNome, pagina, limit]
+    [nomeBusca, pagina, limit]
   );
 
   useEffect(() => {
@@ -64,25 +54,35 @@ export default function Search() {
       setLoading(true);
       setError("");
       try {
-        // Buscar todos os tipos de serviço
-        const data = await buscarTiposServico({
-          pagina,
-          qtdMaximaElementos: limit,
-        });
-        const conteudo = Array.isArray(data?.conteudo) ? data.conteudo : [];
+        let data;
 
-        // Filtrar localmente se houver palavra-chave
-        let filteredConteudo = conteudo;
-        if (debouncedNome && debouncedNome.trim()) {
-          const searchTerm = debouncedNome.toLowerCase().trim();
-          filteredConteudo = conteudo.filter(
-            (item) =>
-              item.nome?.toLowerCase().includes(searchTerm) ||
-              item.categoria?.toLowerCase().includes(searchTerm)
-          );
+        // Se houver texto de busca (após Enter), buscar ofertas de serviço por nome
+        if (nomeBusca && nomeBusca.trim()) {
+          data = await buscarOfertasPorTipo({
+            nome: nomeBusca.trim(),
+            pagina,
+            qtdMaximoElementos: limit,
+          });
+        }
+        // Se houver categoria selecionada (mas sem texto de busca), buscar tipos por categoria
+        else if (categoriasSelecionadas.length > 0) {
+          const categoria = categoriasSelecionadas[0];
+          data = await buscarTiposServicoPorCategoria({
+            categoria,
+            pagina,
+            qtdMaximaElementos: limit,
+          });
+        }
+        // Se não houver nada, buscar todos os tipos de serviço
+        else {
+          data = await buscarTiposServico({
+            pagina,
+            qtdMaximaElementos: limit,
+          });
         }
 
-        setItems(filteredConteudo);
+        const conteudo = Array.isArray(data?.conteudo) ? data.conteudo : [];
+        setItems(conteudo);
 
         // Usar totalPaginas do backend ou calcular baseado no totalElementos
         if (data?.totalPaginas) {
@@ -93,7 +93,7 @@ export default function Search() {
           setTotalPaginas(conteudo.length > 0 ? 1 : 0);
         }
       } catch (err) {
-        setError(err?.message || "Erro ao buscar tipos de serviço. Tente novamente.");
+        setError(err?.message || "Erro ao buscar. Tente novamente.");
         setItems([]);
         setTotalPaginas(0);
       } finally {
@@ -101,7 +101,7 @@ export default function Search() {
       }
     }
     fetchData();
-  }, [pagina, limit, debouncedNome]);
+  }, [pagina, limit, nomeBusca, categoriasSelecionadas]);
 
   const goToPage = (next) => {
     if (next < 1) return;
@@ -110,7 +110,15 @@ export default function Search() {
 
   const clearSearch = () => {
     setNome("");
+    setNomeBusca("");
     setPagina(1);
+  };
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      setNomeBusca(nome);
+      setPagina(1);
+    }
   };
 
   const handleApplyFilters = (categorias, tags) => {
@@ -153,12 +161,10 @@ export default function Search() {
               <input
                 className="flex-1 bg-transparent text-[#002C57] placeholder:text-[#002C57] outline-none text-[17px] leading-[1.294]"
                 style={{ fontFamily: "SF Pro, system-ui, sans-serif" }}
-                placeholder="Digite uma palavra chave"
+                placeholder="Digite uma palavra chave e pressione Enter"
                 value={nome}
-                onChange={(e) => {
-                  setNome(e.target.value);
-                  setPagina(1);
-                }}
+                onChange={(e) => setNome(e.target.value)}
+                onKeyDown={handleSearch}
               />
             </div>
             {/* Botão X para limpar */}
@@ -267,9 +273,11 @@ export default function Search() {
         )}
         {!loading && !error && items.length === 0 && (
           <div className="text-center text-[#002C57] py-8">
-            {debouncedNome
-              ? "Nenhum tipo de serviço encontrado"
-              : "Digite uma palavra-chave para buscar tipos de serviço"}
+            {nomeBusca
+              ? "Nenhuma oferta de serviço encontrada"
+              : categoriasSelecionadas.length > 0
+              ? "Nenhum tipo de serviço encontrado nesta categoria"
+              : "Digite uma palavra-chave e pressione Enter para buscar ofertas de serviço"}
           </div>
         )}
 

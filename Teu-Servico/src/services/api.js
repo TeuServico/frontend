@@ -102,7 +102,7 @@ export const api = {
 
 // Chamada real ao backend para buscar ofertas por nome do tipo de serviço
 export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElementos = 10 }) {
-    return api.get('/ofertarservico/buscar/tiposervico/nome', {
+    return api.get('/ofertaservico/buscar/tiposervico/nome', {
         pagina,
         qtdMaximoElementos,
         nome,
@@ -112,6 +112,15 @@ export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElemento
 // Buscar todos os tipos de serviço
 export async function buscarTiposServico({ pagina = 1, qtdMaximaElementos = 10 }) {
     return api.get('/tiposervico/buscar/todos', {
+        pagina,
+        qtdMaximaElementos,
+    });
+}
+
+// Buscar tipos de serviço por categoria
+export async function buscarTiposServicoPorCategoria({ categoria, pagina = 1, qtdMaximaElementos = 10 }) {
+    return api.get('/tiposervico/buscar/categoria', {
+        categoria,
         pagina,
         qtdMaximaElementos,
     });

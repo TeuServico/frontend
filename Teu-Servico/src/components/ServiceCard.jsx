@@ -5,7 +5,16 @@ export default function ServiceCard({ item }) {
   const [expanded, setExpanded] = useState(false);
   const { openChat } = useChat();
 
-  const descricao = item?.descricao || item?.profissionalSobreMim || "";
+  // Verificar se é um tipo de serviço (tem nome e categoria) ou uma oferta de serviço
+  const isTipoServico =
+    item?.nome && item?.categoria && !item?.profissionalNome;
+
+  const nome = isTipoServico
+    ? item.nome
+    : item?.profissionalNome || "Nome usuario";
+  const descricao = isTipoServico
+    ? `Categoria: ${item.categoria}`
+    : item?.descricao || item?.profissionalSobreMim || "";
   const maxLength = 97; // Baseado no design do Figma
   const descricaoTruncada =
     descricao.length > maxLength && !expanded
@@ -13,7 +22,10 @@ export default function ServiceCard({ item }) {
       : descricao;
 
   // Tags do item (habilidades, tecnologias, etc)
-  const tags = item?.tags || item?.habilidades || [];
+  // Para tipos de serviço, usar categoria como tag
+  const tags = isTipoServico
+    ? [item.categoria]
+    : item?.tags || item?.habilidades || [];
   const maxTagsVisible = 7; // Mostrar até 7 tags antes do botão "+"
 
   return (
@@ -46,7 +58,7 @@ export default function ServiceCard({ item }) {
                 letterSpacing: "-0.02em",
               }}
             >
-              {item?.profissionalNome || "Nome usuario"}
+              {nome}
             </h3>
             <button
               onClick={() => openChat(item)}

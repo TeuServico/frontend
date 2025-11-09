@@ -6,7 +6,7 @@ import FilterModal from "../../components/FilterModal";
 import { Footer } from "../../components/Footer";
 import { Header } from "../../components/Header";
 import ServiceCard from "../../components/ServiceCard";
-import { buscarOfertasPorTipo } from "../../services/api";
+import { buscarTiposServico } from "../../services/api";
 
 function useDebouncedValue(value, delayMs) {
   const [debounced, setDebounced] = useState(value);
@@ -64,14 +64,25 @@ export default function Search() {
       setLoading(true);
       setError("");
       try {
-        // Sempre chamar a API, mesmo quando não há palavra-chave (passar string vazia)
-        const data = await buscarOfertasPorTipo({
-          nome: debouncedNome || "",
+        // Buscar todos os tipos de serviço
+        const data = await buscarTiposServico({
           pagina,
-          qtdMaximoElementos: limit,
+          qtdMaximaElementos: limit,
         });
         const conteudo = Array.isArray(data?.conteudo) ? data.conteudo : [];
-        setItems(conteudo);
+
+        // Filtrar localmente se houver palavra-chave
+        let filteredConteudo = conteudo;
+        if (debouncedNome && debouncedNome.trim()) {
+          const searchTerm = debouncedNome.toLowerCase().trim();
+          filteredConteudo = conteudo.filter(
+            (item) =>
+              item.nome?.toLowerCase().includes(searchTerm) ||
+              item.categoria?.toLowerCase().includes(searchTerm)
+          );
+        }
+
+        setItems(filteredConteudo);
 
         // Usar totalPaginas do backend ou calcular baseado no totalElementos
         if (data?.totalPaginas) {
@@ -82,7 +93,7 @@ export default function Search() {
           setTotalPaginas(conteudo.length > 0 ? 1 : 0);
         }
       } catch (err) {
-        setError(err?.message || "Erro ao buscar ofertas. Tente novamente.");
+        setError(err?.message || "Erro ao buscar tipos de serviço. Tente novamente.");
         setItems([]);
         setTotalPaginas(0);
       } finally {
@@ -90,7 +101,7 @@ export default function Search() {
       }
     }
     fetchData();
-  }, [debouncedNome, pagina, limit]);
+  }, [pagina, limit, debouncedNome]);
 
   const goToPage = (next) => {
     if (next < 1) return;
@@ -257,8 +268,8 @@ export default function Search() {
         {!loading && !error && items.length === 0 && (
           <div className="text-center text-[#002C57] py-8">
             {debouncedNome
-              ? "Nenhum resultado encontrado"
-              : "Digite uma palavra-chave para buscar ofertas de serviço"}
+              ? "Nenhum tipo de serviço encontrado"
+              : "Digite uma palavra-chave para buscar tipos de serviço"}
           </div>
         )}
 

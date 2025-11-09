@@ -109,6 +109,14 @@ export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElemento
     });
 }
 
+// Buscar todos os tipos de serviço
+export async function buscarTiposServico({ pagina = 1, qtdMaximaElementos = 10 }) {
+    return api.get('/tiposervico/buscar/todos', {
+        pagina,
+        qtdMaximaElementos,
+    });
+}
+
 export async function getClientePerfil() {
     return api.get('/cliente/perfil');
 }

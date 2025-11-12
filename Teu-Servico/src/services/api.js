@@ -138,10 +138,18 @@ export async function getMinhasOfertas({ pagina = 1, qtdMaximoElementos = 10 }) 
     return api.get('/ofertaservico/minhasofertas', { pagina, qtdMaximoElementos })
 }
 
-export async function criarOfertaServico({ tipoServicoNome, tipoServicoCategoria, descricao, tags }) {
+// Criar tipo de serviço
+export async function criarTipoServico({ nome, categoria }) {
+    return api.post('/tiposervico/criar', {
+        nome,
+        categoria,
+    });
+}
+
+// Criar oferta de serviço
+export async function criarOfertaServico({ tipoServicoId, descricao, tags }) {
     return api.post('/ofertaservico/criar', {
-        tipoServicoNome,
-        tipoServicoCategoria,
+        tipoServicoId,
         descricao,
         tags,
     });

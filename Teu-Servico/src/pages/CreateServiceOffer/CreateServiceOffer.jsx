@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
-import { Header } from "../../components/Header";
+import { useNavigate } from "react-router-dom";
 import { Footer } from "../../components/Footer";
-import { criarOfertaServico } from "../../services/api";
+import { Header } from "../../components/Header";
+import { criarOfertaServico, criarTipoServico } from "../../services/api";
 import { getFriendlyErrorMessage } from "../../utils/errorMessages";
 
 // Categorias disponíveis para tipos de serviço
@@ -24,7 +24,7 @@ const CATEGORIAS = [
 
 export default function CreateServiceOffer() {
   const navigate = useNavigate();
-  const [nomeTipoServico, setNomeTipoServico] = useState("");
+  const [nome, setNome] = useState("");
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
   const [tags, setTags] = useState([]);
@@ -55,8 +55,8 @@ export default function CreateServiceOffer() {
     setError("");
 
     // Validações
-    if (!nomeTipoServico || nomeTipoServico.trim() === "") {
-      setError("O nome do tipo de serviço é obrigatório");
+    if (!nome || nome.trim() === "") {
+      setError("O nome do serviço é obrigatório");
       return;
     }
 
@@ -77,22 +77,28 @@ export default function CreateServiceOffer() {
 
     setLoading(true);
     try {
-      // Enviar com nome e categoria - o backend gera/resolve o ID automaticamente
+      // 1. Criar tipo de serviço primeiro
+      const tipoServico = await criarTipoServico({
+        nome: nome.trim(),
+        categoria: categoria.trim(),
+      });
+
+      // 2. Criar oferta usando o ID do tipo de serviço
       await criarOfertaServico({
-        tipoServicoNome: nomeTipoServico.trim(),
-        tipoServicoCategoria: categoria.trim(),
+        tipoServicoId: tipoServico.id,
         descricao: descricao.trim(),
         tags: tags,
       });
-      // Redirecionar após sucesso
+
       navigate("/buscar");
     } catch (err) {
-      // Tentar usar a mensagem original do erro primeiro, depois usar a função amigável
-      const errorMsg = err?.originalText ?
-        (typeof err.originalText === 'string' ? err.originalText : JSON.parse(err.originalText)?.message || err.message) :
-        err?.message || getFriendlyErrorMessage(err);
+      const errorMsg = err?.originalText
+        ? typeof err.originalText === "string"
+          ? err.originalText
+          : JSON.parse(err.originalText)?.message || err.message
+        : err?.message || getFriendlyErrorMessage(err);
       setError(errorMsg);
-      console.error('Erro ao criar oferta:', err);
+      console.error("Erro ao criar oferta:", err);
     } finally {
       setLoading(false);
     }
@@ -111,25 +117,25 @@ export default function CreateServiceOffer() {
           </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* Campo: Nome do Tipo de Serviço */}
+            {/* Campo: Nome */}
             <div className="flex flex-col gap-2">
               <label
                 className="text-base font-semibold text-[#002C57]"
                 style={{ fontFamily: "Inter, system-ui, sans-serif" }}
               >
-                Nome do Tipo de Serviço *
+                Nome *
               </label>
               <input
                 type="text"
-                value={nomeTipoServico}
-                onChange={(e) => setNomeTipoServico(e.target.value)}
-                placeholder="Ex: Desenvolvimento de Landing pages, Pintura residencial, Instalação elétrica..."
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: desenvolver página web"
                 className="w-full rounded-lg border-2 border-[#F69027] bg-white px-4 py-3 text-base font-normal text-[#002C57] shadow-sm focus:border-[#002C57] focus:outline-none"
                 style={{ fontFamily: "Inter, system-ui, sans-serif" }}
                 required
               />
               <p className="text-sm text-[#002C57] opacity-70">
-                Digite o nome do tipo de serviço que você está oferecendo
+                Digite o nome do serviço que você está oferecendo
               </p>
             </div>
 

@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
 
 export default function ServiceCard({ item }) {
   const [expanded, setExpanded] = useState(false);
   const { openChat } = useChat();
+  const navigate = useNavigate();
+  const { isLoggedIn, role } = useContext(AuthContext);
+
+  // Verificar se é cliente logado
+  const isCliente = isLoggedIn && (role === "CLIENTE" || role === "Cliente");
 
   // Verificar se é um tipo de serviço (tem nome e categoria) ou uma oferta de serviço
   const isTipoServico =
@@ -49,8 +56,8 @@ export default function ServiceCard({ item }) {
 
         {/* Body do card */}
         <div className="flex-1 flex flex-col gap-[10px]">
-          {/* Header: Nome + Botão */}
-          <div className="flex items-center justify-between">
+          {/* Header: Nome + Botões */}
+          <div className="flex items-center justify-between gap-2">
             <h3
               className="text-[#002C57] font-semibold text-2xl leading-[1.2]"
               style={{
@@ -60,15 +67,34 @@ export default function ServiceCard({ item }) {
             >
               {nome}
             </h3>
-            <button
-              onClick={() => openChat(item)}
-              className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
-              style={{
-                fontFamily: "Inter, system-ui, sans-serif",
-              }}
-            >
-              Iniciar conversa
-            </button>
+            <div className="flex items-center gap-2">
+              {!isTipoServico && isCliente && (
+                <button
+                  onClick={() =>
+                    navigate(`/solicitar-agendamento/${item.id}`, {
+                      state: { oferta: item },
+                    })
+                  }
+                  className="bg-white text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:bg-[#fff2e4] transition-opacity whitespace-nowrap"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  Solicitar agendamento
+                </button>
+              )}
+              {isLoggedIn && (
+                <button
+                  onClick={() => openChat(item)}
+                  className="bg-[#F69027] text-[#002C57] border border-[#002C57] rounded-lg px-3 py-2 text-base font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                  }}
+                >
+                  Iniciar conversa
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Descrição */}

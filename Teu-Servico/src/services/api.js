@@ -24,6 +24,11 @@ async function request(method, path, { params, body, headers } = {}) {
         Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
     }
 
+    // Debug: log do body antes de enviar (apenas para desenvolvimento)
+    if (body && path.includes('/agendamento/cliente/solicitar')) {
+        console.log('Enviando para backend:', JSON.stringify(body, null, 2));
+    }
+
     const response = await fetch(url, {
         method,
         headers: buildHeaders(headers),
@@ -96,17 +101,23 @@ async function request(method, path, { params, body, headers } = {}) {
 
 export const api = {
     get: (path, params) => request('GET', path, { params }),
-    post: (path, body) => request('POST', path, { body }),
+    post: (path, body, options = {}) => request('POST', path, { body, ...options }),
     put: (path, body) => request('PUT', path, { body }),
 };
 
 // Chamada real ao backend para buscar ofertas por nome do tipo de serviço
 export async function buscarOfertasPorTipo({ nome, pagina = 1, qtdMaximoElementos = 10 }) {
-    return api.get('/ofertaservico/buscar/tiposervico/nome', {
+    const params = {
         pagina,
         qtdMaximoElementos,
-        nome,
-    });
+    };
+
+    // Só adicionar nome se não estiver vazio
+    if (nome && nome.trim() !== "") {
+        params.nome = nome.trim();
+    }
+
+    return api.get('/ofertaservico/buscar/tiposervico/nome', params);
 }
 
 // Buscar todos os tipos de serviço
@@ -161,5 +172,70 @@ export async function atualizarPerfilProfissional(profissionalRequestDTO) {
     // Não envia credenciais pois é uma atualização (não precisa de senha)
     return api.post('/profissional/criar', {
         profissionalRequestDTO,
+    });
+}
+
+// ========== AGENDAMENTOS - CLIENTE ==========
+
+export async function solicitarAgendamento({ ofertaServicoId, dataEntrega, observacoes, precoDesejado }) {
+    return api.post('/agendamento/cliente/solicitar', {
+        ofertaServicoId: Number(ofertaServicoId),
+        dataEntrega,
+        observacoes: observacoes.trim(),
+        precoDesejado: Number(precoDesejado),
+    });
+}
+
+export async function meusAgendamentosCliente({ pagina = 1, qtdMaximaElementos = 10 }) {
+    return api.get('/agendamento/cliente/meusagendamentos', {
+        pagina,
+        qtdMaximaElementos,
+    });
+}
+
+export async function aceitarContraOferta(idAgendamento) {
+    return api.post('/agendamento/cliente/aceitar/contraoferta', null, {
+        params: { idAgendamento: String(idAgendamento) },
+    });
+}
+
+export async function cancelarAgendamentoCliente(idAgendamento) {
+    return api.post('/agendamento/cliente/cancelar', null, {
+        params: { idAgendamento: String(idAgendamento) },
+    });
+}
+
+// ========== AGENDAMENTOS - PROFISSIONAL ==========
+
+export async function meusAgendamentosProfissional({ pagina = 1, qtdMaximaElementos = 10 }) {
+    return api.get('/agendamento/profissional/meusagendamentos', {
+        pagina,
+        qtdMaximaElementos,
+    });
+}
+
+export async function aceitarAgendamento(idAgendamento) {
+    return api.post('/agendamento/profissional/aceitar', null, {
+        params: { idAgendamento: String(idAgendamento) },
+    });
+}
+
+export async function fazerContraOferta({ idDoAgendamento, dataEntrega, precoDesejado }) {
+    return api.post('/agendamento/profissional/fazer/contraoferta', {
+        idDoAgendamento,
+        dataEntrega,
+        precoDesejado,
+    });
+}
+
+export async function cancelarAgendamentoProfissional(idAgendamento) {
+    return api.post('/agendamento/profissional/cancelar', null, {
+        params: { idAgendamento: String(idAgendamento) },
+    });
+}
+
+export async function concluirAgendamento(idAgendamento) {
+    return api.post('/agendamento/profissional/concluir', null, {
+        params: { idAgendamento: String(idAgendamento) },
     });
 }

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { FaCamera, FaShieldAlt, FaTools, FaUserCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaCamera, FaShieldAlt, FaTools, FaUserCircle } from "react-icons/fa";
 
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -7,6 +7,7 @@ import { getClientePerfil, getProfissionalPerfil } from "../../services/api";
 import { ProfessionalInfoPlaceholder } from "./ProfessionalInfoPlaceholder";
 import { SecurityPlaceholder } from "./SecurityPlaceholder";
 import { ServicesPlaceholder } from "./ServicesPlaceholder";
+import { AppointmentsPlaceholder } from "./AppointmentsPlaceholder";
 
 const MenuSection = ({ icon: Icon, title, children }) => (
   <div className="mb-8 last:mb-0">
@@ -280,6 +281,8 @@ const EditInfo = () => {
         return <ProfessionalInfoPlaceholder />;
       case "services":
         return <ServicesPlaceholder />;
+      case "appointments":
+        return <AppointmentsPlaceholder />;
       case "password":
         return <SecurityPlaceholder title="Alterar senha" />;
       case "linkedAccounts":
@@ -327,6 +330,16 @@ const EditInfo = () => {
               </MenuButton>
             </MenuSection>
           )}
+
+          {/* Seção de agendamentos para todos */}
+          <MenuSection icon={FaCalendarAlt} title="Agendamentos">
+            <MenuButton
+              active={activeSection === "appointments"}
+              onClick={() => setActiveSection("appointments")}
+            >
+              {isProfessional ? "Ver agendamentos" : "Meus agendamentos"}
+            </MenuButton>
+          </MenuSection>
 
           <MenuSection icon={FaShieldAlt} title="Seguranca">
             <MenuButton

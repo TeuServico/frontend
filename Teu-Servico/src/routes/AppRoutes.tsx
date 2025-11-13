@@ -10,8 +10,10 @@ import ResetPassword from "../pages/Auth/ResetPassword/ResetPassword";
 // Home removido - landing agora é App.jsx
 import ProfessionalProfile from "../pages/ProfessionalProfile/ProfessionalProfile";
 // import CallToAction from "../pages/Home/CallToAction"
+import AppointmentDetail from "../pages/AppointmentDetail/AppointmentDetail";
 import CreateServiceOffer from "../pages/CreateServiceOffer/CreateServiceOffer";
 import { EditInfo } from "../pages/EditInfo/EditInfor";
+import RequestAppointment from "../pages/RequestAppointment/RequestAppointment";
 import Search from "../pages/Search/Search";
 
 
@@ -47,6 +49,22 @@ export const AppRoutes = () => {
                     element={
                         <ProtectedRoute>
                             <CreateServiceOffer />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/solicitar-agendamento/:ofertaId"
+                    element={
+                        <ProtectedRoute>
+                            <RequestAppointment />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/agendamento/:id"
+                    element={
+                        <ProtectedRoute>
+                            <AppointmentDetail />
                         </ProtectedRoute>
                     }
                 />

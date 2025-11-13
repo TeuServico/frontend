@@ -106,95 +106,101 @@ export const AppointmentsPlaceholder = () => {
             });
   }, [agendamentos, activeFilter]);
 
-  // Removido handleVerDetalhes - não temos endpoint para buscar agendamento por ID
+  const handleVerDetalhes = (agendamento) => {
+    const id = agendamento.id || agendamento.idAgendamento;
+    if (id) {
+      navigate(`/agendamento/${id}`);
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Filtros */}
-      <div>
-        <ul className="flex flex-wrap gap-2">
-          {FILTERS.map((filter) => (
-            <ButtonFilter
-              key={filter.key}
-              isActive={activeFilter === filter.key}
-              label={filter.label}
-              onClick={() => {
-                setActiveFilter(filter.key);
-                setPagina(1);
-              }}
-            />
-          ))}
-        </ul>
-      </div>
+    <section className="mt-6">
+      <h2 className="text-center text-lg font-semibold text-[#002C57] md:text-xl">
+        Gerencie suas informacoes
+      </h2>
 
-      {/* Estados */}
+      <ul className="mt-6 flex flex-wrap items-center gap-3 justify-center">
+        {FILTERS.map((filter) => (
+          <ButtonFilter
+            key={filter.key}
+            isActive={activeFilter === filter.key}
+            label={filter.label}
+            onClick={() => {
+              setActiveFilter(filter.key);
+              setPagina(1);
+            }}
+          />
+        ))}
+      </ul>
+
       {loading && (
-        <div className="text-center text-[#002C57] py-8">
+        <div className="mt-8 text-center text-[#002C57] py-8">
           Carregando agendamentos...
         </div>
       )}
 
       {!loading && error && (
-        <div className="text-center text-red-600 py-8">{error}</div>
-      )}
-
-      {!loading && !error && agendamentosFiltrados.length === 0 && (
-        <div className="text-center text-[#002C57] py-8">
-          Nenhum agendamento encontrado
+        <div className="mt-8 rounded-xl border border-red-300 bg-red-50 p-6 text-center text-sm text-red-700">
+          {error}
         </div>
       )}
 
-      {/* Lista de agendamentos */}
-      {!loading && !error && agendamentosFiltrados.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {agendamentosFiltrados.map((agendamento) => {
-            const status = agendamento?.status;
-            const servicoNome =
-              agendamento?.ofertaServicoResponseDTO?.tipoServico?.nome ||
-              agendamento?.ofertaServico?.tipoServico?.nome ||
-              agendamento?.tipoServico?.nome ||
-              "Serviço não especificado";
-            // Se houver contra-oferta, usar os valores da contra-oferta, senão usar os valores originais
-            const temContraOferta = agendamento?.temContraOferta || false;
-            const prazo = temContraOferta
-              ? agendamento?.contraOferta?.contraOfertaDataDeEntrega || agendamento?.dataEntrega
-              : agendamento?.dataEntrega || "Não informado";
-            const valor = temContraOferta
-              ? agendamento?.contraOferta?.contraOfertaPrecoDesejado || agendamento?.precoDesejado
-              : agendamento?.precoDesejado || 0;
-            const clienteNome =
-              agendamento?.clienteNome ||
-              agendamento?.cliente?.nomeCompleto ||
-              "Cliente";
-            // Acessar nome do profissional corretamente
-            const profissionalNomeRaw =
-              agendamento?.ofertaServicoResponseDTO?.profissionalNome ||
-              agendamento?.profissionalNome ||
-              agendamento?.profissional?.nomeCompleto;
+      {!loading && !error && (
+        <>
+          <div className="mt-8 grid gap-4">
+            {agendamentosFiltrados.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-[#ccd9e6] bg-[#fef8f1] p-6 text-center text-sm text-[#4b5a6a]">
+                Nenhum agendamento encontrado
+              </div>
+            ) : (
+              agendamentosFiltrados.map((agendamento) => {
+                const status = agendamento?.status;
+                const servicoNome =
+                  agendamento?.ofertaServicoResponseDTO?.tipoServico?.nome ||
+                  agendamento?.ofertaServico?.tipoServico?.nome ||
+                  agendamento?.tipoServico?.nome ||
+                  "Serviço não especificado";
+                // Se houver contra-oferta, usar os valores da contra-oferta, senão usar os valores originais
+                const temContraOferta = agendamento?.temContraOferta || false;
+                const prazo = temContraOferta
+                  ? agendamento?.contraOferta?.contraOfertaDataDeEntrega || agendamento?.dataEntrega
+                  : agendamento?.dataEntrega || "Não informado";
+                const valor = temContraOferta
+                  ? agendamento?.contraOferta?.contraOfertaPrecoDesejado || agendamento?.precoDesejado
+                  : agendamento?.precoDesejado || 0;
+                const clienteNome =
+                  agendamento?.clienteNome ||
+                  agendamento?.cliente?.nomeCompleto ||
+                  "Cliente";
+                // Acessar nome do profissional corretamente
+                const profissionalNomeRaw =
+                  agendamento?.ofertaServicoResponseDTO?.profissionalNome ||
+                  agendamento?.profissionalNome ||
+                  agendamento?.profissional?.nomeCompleto;
 
-            // Validar se não é um ID (IDs geralmente contêm "/" ou "=" ou são muito longos)
-            const profissionalNome = profissionalNomeRaw &&
-              !profissionalNomeRaw.includes("/") &&
-              !profissionalNomeRaw.includes("=") &&
-              profissionalNomeRaw.length < 100 &&
-              profissionalNomeRaw !== agendamento?.ofertaServicoResponseDTO?.profissionalId
-              ? profissionalNomeRaw
-              : "Profissional";
+                // Validar se não é um ID (IDs geralmente contêm "/" ou "=" ou são muito longos)
+                const profissionalNome = profissionalNomeRaw &&
+                  !profissionalNomeRaw.includes("/") &&
+                  !profissionalNomeRaw.includes("=") &&
+                  profissionalNomeRaw.length < 100 &&
+                  profissionalNomeRaw !== agendamento?.ofertaServicoResponseDTO?.profissionalId
+                  ? profissionalNomeRaw
+                  : "Profissional";
 
-            return (
-              <div
-                key={agendamento.id || agendamento.idAgendamento}
-                className="border border-[#ccd9e6] rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex-1">
-                    <h3
-                      className="text-lg font-semibold text-[#002C57] mb-2"
-                      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
-                    >
-                      {servicoNome}
-                    </h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-[#002C57] opacity-70">
+                return (
+                  <article
+                    key={agendamento.id || agendamento.idAgendamento}
+                    onClick={() => handleVerDetalhes(agendamento)}
+                    className="rounded-2xl border border-[#ccd9e6] bg-white p-5 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                  >
+                    <header className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex-1">
+                        <h3 className="text-base font-semibold text-[#002C57]">
+                          {servicoNome}
+                        </h3>
+                      </div>
+                    </header>
+                    <div className="mt-3 flex flex-wrap gap-4 text-sm text-[#4b5a6a]">
                       <span>
                         <strong>Prazo:</strong> {prazo ? formatarPrazo(prazo) : "Não informado"}
                         {temContraOferta && (
@@ -219,9 +225,9 @@ export const AppointmentsPlaceholder = () => {
                       )}
                     </div>
                     {status && (
-                      <div className="mt-2">
+                      <div className="mt-3">
                         <span
-                          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
+                          className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
                             status
                           )}`}
                         >
@@ -229,36 +235,36 @@ export const AppointmentsPlaceholder = () => {
                         </span>
                       </div>
                     )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                  </article>
+                );
+              })
+            )}
+          </div>
 
-      {/* Paginação */}
-      {!loading && !error && agendamentosFiltrados.length > 0 && (
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <button
-            className="px-4 py-2 rounded-lg border border-[#E6EDF5] text-[#002C57] hover:bg-[#F69027] hover:text-white hover:border-[#F69027] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#002C57] disabled:hover:border-[#E6EDF5]"
-            onClick={() => setPagina(pagina - 1)}
-            disabled={pagina <= 1}
-          >
-            Anterior
-          </button>
-          <span className="text-[#002C57] text-sm font-medium">
-            Página {pagina} de {totalPaginas > 0 ? totalPaginas : 1}
-          </span>
-          <button
-            className="px-4 py-2 rounded-lg border border-[#E6EDF5] text-[#002C57] hover:bg-[#F69027] hover:text-white hover:border-[#F69027] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#002C57] disabled:hover:border-[#E6EDF5]"
-            onClick={() => setPagina(pagina + 1)}
-            disabled={pagina >= totalPaginas}
-          >
-            Próxima
-          </button>
-        </div>
+          {/* Paginação */}
+          {agendamentosFiltrados.length > 0 && totalPaginas > 1 && (
+            <div className="mt-6 flex justify-center items-center gap-4">
+              <button
+                className="px-4 py-2 rounded-lg border border-[#E6EDF5] text-[#002C57] hover:bg-[#F69027] hover:text-white hover:border-[#F69027] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setPagina(pagina - 1)}
+                disabled={pagina <= 1}
+              >
+                Anterior
+              </button>
+              <span className="text-[#002C57] text-sm font-medium">
+                Página {pagina} de {totalPaginas > 0 ? totalPaginas : 1}
+              </span>
+              <button
+                className="px-4 py-2 rounded-lg border border-[#E6EDF5] text-[#002C57] hover:bg-[#F69027] hover:text-white hover:border-[#F69027] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setPagina(pagina + 1)}
+                disabled={pagina >= totalPaginas}
+              >
+                Próxima
+              </button>
+            </div>
+          )}
+        </>
       )}
-    </div>
+    </section>
   );
 };

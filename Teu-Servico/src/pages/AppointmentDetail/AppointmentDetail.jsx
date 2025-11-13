@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CounterOfferModal from "../../components/CounterOfferModal";
 import { Footer } from "../../components/Footer";
@@ -36,53 +36,55 @@ export default function AppointmentDetail() {
   const isCliente = role === "CLIENTE" || role === "Cliente";
   const isProfissional = role === "PROFISSIONAL" || role === "Profissional";
 
-  useEffect(() => {
-    async function fetchAgendamento() {
-      if (!id) {
-        setError("ID do agendamento não fornecido");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Buscar em ambos os endpoints e encontrar o agendamento
-        let agendamentoEncontrado = null;
-
-        if (isCliente) {
-          const data = await meusAgendamentosCliente({
-            pagina: 1,
-            qtdMaximaElementos: 1000,
-          });
-          agendamentoEncontrado = data?.conteudo?.find(
-            (a) =>
-              String(a.id) === String(id) ||
-              String(a.idAgendamento) === String(id)
-          );
-        } else if (isProfissional) {
-          const data = await meusAgendamentosProfissional({
-            pagina: 1,
-            qtdMaximaElementos: 1000,
-          });
-          agendamentoEncontrado = data?.conteudo?.find(
-            (a) =>
-              String(a.id) === String(id) ||
-              String(a.idAgendamento) === String(id)
-          );
-        }
-
-        if (agendamentoEncontrado) {
-          setAgendamento(agendamentoEncontrado);
-        } else {
-          setError("Agendamento não encontrado");
-        }
-      } catch (err) {
-        setError(err?.message || "Erro ao carregar agendamento");
-      } finally {
-        setLoading(false);
-      }
+  const fetchAgendamento = useCallback(async () => {
+    if (!id) {
+      setError("ID do agendamento não fornecido");
+      setLoading(false);
+      return;
     }
-    fetchAgendamento();
+
+    try {
+      setLoading(true);
+      // Buscar em ambos os endpoints e encontrar o agendamento
+      let agendamentoEncontrado = null;
+
+      if (isCliente) {
+        const data = await meusAgendamentosCliente({
+          pagina: 1,
+          qtdMaximaElementos: 1000,
+        });
+        agendamentoEncontrado = data?.conteudo?.find(
+          (a) =>
+            String(a.id) === String(id) ||
+            String(a.idAgendamento) === String(id)
+        );
+      } else if (isProfissional) {
+        const data = await meusAgendamentosProfissional({
+          pagina: 1,
+          qtdMaximaElementos: 1000,
+        });
+        agendamentoEncontrado = data?.conteudo?.find(
+          (a) =>
+            String(a.id) === String(id) ||
+            String(a.idAgendamento) === String(id)
+        );
+      }
+
+      if (agendamentoEncontrado) {
+        setAgendamento(agendamentoEncontrado);
+      } else {
+        setError("Agendamento não encontrado");
+      }
+    } catch (err) {
+      setError(err?.message || "Erro ao carregar agendamento");
+    } finally {
+      setLoading(false);
+    }
   }, [id, isCliente, isProfissional]);
+
+  useEffect(() => {
+    fetchAgendamento();
+  }, [fetchAgendamento]);
 
   const handleAction = async (acao) => {
     if (!agendamento) return;
@@ -119,8 +121,13 @@ export default function AppointmentDetail() {
           break;
       }
 
-      // Recarregar agendamento após ação
-      navigate("/edit-profile");
+      // Recarregar agendamento após ação para atualizar o status
+      await fetchAgendamento();
+
+      // Se a ação foi concluir, redirecionar para a lista
+      if (acao === "concluir") {
+        navigate("/edit-profile");
+      }
     } catch (err) {
       const errorMsg = err?.originalText
         ? typeof err.originalText === "string"
@@ -150,7 +157,8 @@ export default function AppointmentDetail() {
       });
 
       setShowCounterOfferModal(false);
-      navigate("/edit-profile");
+      // Recarregar agendamento após contra-oferta
+      await fetchAgendamento();
     } catch (err) {
       const errorMsg = err?.originalText
         ? typeof err.originalText === "string"
@@ -190,6 +198,22 @@ export default function AppointmentDetail() {
 
   const status = agendamento?.status;
   const acoes = getAcoesDisponiveis(status, role);
+
+  // Debug: verificar status e ações disponíveis
+  console.log("AppointmentDetail - Debug:", {
+    status,
+    role,
+    isCliente,
+    isProfissional,
+    acoes,
+    agendamento: agendamento
+      ? {
+          id: agendamento.id || agendamento.idAgendamento,
+          status: agendamento.status,
+          temContraOferta: agendamento.temContraOferta,
+        }
+      : null,
+  });
   const servicoNome =
     agendamento?.ofertaServicoResponseDTO?.tipoServico?.nome ||
     agendamento?.ofertaServico?.tipoServico?.nome ||
@@ -249,7 +273,10 @@ export default function AppointmentDetail() {
           </h1>
 
           {/* Card de informações */}
-          <div className="bg-[#f5f8fb] rounded-xl border border-[#ccd9e6] p-6 mb-6 shadow-sm">
+          <div
+            className="bg-[#f5f8fb] rounded-xl border border-[#ccd9e6] p-6 mb-6 shadow-sm"
+            style={{ backgroundColor: "#f5f8fb" }}
+          >
             {/* Serviço */}
             <div className="mb-4">
               <p
@@ -406,14 +433,21 @@ export default function AppointmentDetail() {
           )}
 
           {/* Botões de ação */}
-          {acoes.length > 0 && (
-            <div className="flex flex-wrap gap-3 justify-center">
+          {acoes.length > 0 ? (
+            <div className="flex flex-row gap-3 justify-center items-stretch mt-6">
               {acoes.includes("aceitar") && (
                 <button
-                  onClick={() => handleAction("aceitar")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAction("aceitar");
+                  }}
                   disabled={actionLoading}
-                  className="flex-1 min-w-[140px] rounded-lg border-2 border-green-500 bg-white px-4 py-3 text-base font-semibold text-green-600 hover:bg-green-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                  className="flex-1 rounded-lg border-2 border-green-500 bg-white px-4 py-3 text-base font-semibold text-green-600 hover:bg-green-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    zIndex: 10,
+                  }}
                 >
                   Aceitar proposta
                 </button>
@@ -421,10 +455,17 @@ export default function AppointmentDetail() {
 
               {acoes.includes("contraOferta") && (
                 <button
-                  onClick={() => handleAction("contraOferta")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAction("contraOferta");
+                  }}
                   disabled={actionLoading}
-                  className="flex-1 min-w-[140px] rounded-lg border-2 border-[#F69027] bg-white px-4 py-3 text-base font-semibold text-[#F69027] hover:bg-[#fff2e4] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                  className="flex-1 rounded-lg border-2 border-[#F69027] bg-white px-4 py-3 text-base font-semibold text-[#F69027] hover:bg-[#fff2e4] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    zIndex: 10,
+                  }}
                 >
                   Contra proposta
                 </button>
@@ -432,14 +473,19 @@ export default function AppointmentDetail() {
 
               {(acoes.includes("recusar") || acoes.includes("cancelar")) && (
                 <button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     handleAction(
                       acoes.includes("recusar") ? "recusar" : "cancelar"
-                    )
-                  }
+                    );
+                  }}
                   disabled={actionLoading}
-                  className="flex-1 min-w-[140px] rounded-lg border-2 border-red-500 bg-white px-4 py-3 text-base font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                  className="flex-1 rounded-lg border-2 border-red-500 bg-white px-4 py-3 text-base font-semibold text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    zIndex: 10,
+                  }}
                 >
                   {acoes.includes("recusar") ? "Recusar proposta" : "Cancelar"}
                 </button>
@@ -447,14 +493,31 @@ export default function AppointmentDetail() {
 
               {acoes.includes("concluir") && (
                 <button
-                  onClick={() => handleAction("concluir")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAction("concluir");
+                  }}
                   disabled={actionLoading}
-                  className="flex-1 min-w-[140px] rounded-lg border-2 border-green-500 bg-green-500 px-4 py-3 text-base font-semibold text-white hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+                  className="flex-1 rounded-lg border-2 border-green-500 bg-green-500 px-4 py-3 text-base font-semibold text-white hover:bg-green-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    zIndex: 10,
+                  }}
                 >
                   Concluir
                 </button>
               )}
+            </div>
+          ) : (
+            <div className="mt-6 text-center text-[#002C57] opacity-70">
+              <p>Nenhuma ação disponível para este status.</p>
+              <p className="text-sm mt-2">
+                Status: {status || "Não informado"}
+              </p>
+              <p className="text-sm">
+                Ações disponíveis: {JSON.stringify(acoes)}
+              </p>
             </div>
           )}
         </div>

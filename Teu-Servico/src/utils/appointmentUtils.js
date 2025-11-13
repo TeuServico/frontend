@@ -56,6 +56,9 @@ export function getAcoesDisponiveis(status, role) {
   const isCliente = role === "CLIENTE" || role === "Cliente";
   const isProfissional = role === "PROFISSIONAL" || role === "Profissional";
 
+  // Normalizar status (remover espaços extras e garantir maiúsculas)
+  const statusNormalizado = status ? String(status).trim().toUpperCase() : null;
+
   const acoes = {
     AGUARDANDO_CONFIRMACAO_PROFISSIONAL: {
       cliente: ["cancelar"],
@@ -79,10 +82,20 @@ export function getAcoesDisponiveis(status, role) {
     },
   };
 
+  // Debug: log para verificar o que está sendo passado
+  console.log("getAcoesDisponiveis - Debug:", {
+    statusOriginal: status,
+    statusNormalizado,
+    role,
+    isCliente,
+    isProfissional,
+    acoesDisponiveis: acoes[statusNormalizado],
+  });
+
   if (isCliente) {
-    return acoes[status]?.cliente || [];
+    return acoes[statusNormalizado]?.cliente || [];
   } else if (isProfissional) {
-    return acoes[status]?.profissional || [];
+    return acoes[statusNormalizado]?.profissional || [];
   }
 
   return [];
